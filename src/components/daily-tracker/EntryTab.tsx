@@ -233,6 +233,66 @@ export default function EntryTab({
             </select>
           </div>
 
+          {/* People */}
+          <div>
+            <div className="flex items-center gap-2 mb-3">
+              <div className="h-px flex-1 bg-border" />
+              <span className="text-xs font-semibold uppercase tracking-widest text-muted-foreground px-2 flex items-center gap-1">
+                <Icon name="Users" size={12} />
+                Люди
+              </span>
+              <div className="h-px flex-1 bg-border" />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1.5">
+                  План, чел.
+                </label>
+                <input
+                  type="number"
+                  min="0"
+                  value={form.peoplePlan}
+                  onChange={(e) => set("peoplePlan", e.target.value)}
+                  required
+                  placeholder="0"
+                  className="w-full border border-border rounded-sm px-3 py-2 text-sm font-mono-data bg-white focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1.5">
+                  Факт, чел.
+                </label>
+                <input
+                  type="number"
+                  min="0"
+                  value={form.peopleFact}
+                  onChange={(e) => set("peopleFact", e.target.value)}
+                  required
+                  placeholder="0"
+                  className={`w-full border rounded-sm px-3 py-2 text-sm font-mono-data bg-white focus:outline-none focus:ring-2 focus:ring-primary/40 ${
+                    form.peopleFact &&
+                    form.peoplePlan &&
+                    Number(form.peopleFact) < Number(form.peoplePlan)
+                      ? "border-red-300 focus:border-red-400"
+                      : "border-border focus:border-primary"
+                  }`}
+                />
+              </div>
+            </div>
+            {form.peoplePlan && form.peopleFact && (
+              <p
+                className={`text-xs mt-2 ${deviationClass(
+                  Number(form.peoplePlan),
+                  Number(form.peopleFact),
+                )}`}
+              >
+                Отклонение:{" "}
+                {deviationStr(Number(form.peoplePlan), Number(form.peopleFact))}{" "}
+                чел.
+              </p>
+            )}
+          </div>
+
           {/* Machinery */}
           <div>
             <div className="flex items-center gap-2 mb-3">
@@ -292,66 +352,6 @@ export default function EntryTab({
                   Number(form.machineryFact),
                 )}{" "}
                 ед.
-              </p>
-            )}
-          </div>
-
-          {/* People */}
-          <div>
-            <div className="flex items-center gap-2 mb-3">
-              <div className="h-px flex-1 bg-border" />
-              <span className="text-xs font-semibold uppercase tracking-widest text-muted-foreground px-2 flex items-center gap-1">
-                <Icon name="Users" size={12} />
-                Люди
-              </span>
-              <div className="h-px flex-1 bg-border" />
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1.5">
-                  План, чел.
-                </label>
-                <input
-                  type="number"
-                  min="0"
-                  value={form.peoplePlan}
-                  onChange={(e) => set("peoplePlan", e.target.value)}
-                  required
-                  placeholder="0"
-                  className="w-full border border-border rounded-sm px-3 py-2 text-sm font-mono-data bg-white focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary"
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1.5">
-                  Факт, чел.
-                </label>
-                <input
-                  type="number"
-                  min="0"
-                  value={form.peopleFact}
-                  onChange={(e) => set("peopleFact", e.target.value)}
-                  required
-                  placeholder="0"
-                  className={`w-full border rounded-sm px-3 py-2 text-sm font-mono-data bg-white focus:outline-none focus:ring-2 focus:ring-primary/40 ${
-                    form.peopleFact &&
-                    form.peoplePlan &&
-                    Number(form.peopleFact) < Number(form.peoplePlan)
-                      ? "border-red-300 focus:border-red-400"
-                      : "border-border focus:border-primary"
-                  }`}
-                />
-              </div>
-            </div>
-            {form.peoplePlan && form.peopleFact && (
-              <p
-                className={`text-xs mt-2 ${deviationClass(
-                  Number(form.peoplePlan),
-                  Number(form.peopleFact),
-                )}`}
-              >
-                Отклонение:{" "}
-                {deviationStr(Number(form.peoplePlan), Number(form.peopleFact))}{" "}
-                чел.
               </p>
             )}
           </div>
