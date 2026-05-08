@@ -119,6 +119,13 @@ export default function Index() {
               </div>
             </div>
             <div className="flex items-center gap-3">
+              <div className="hidden sm:flex items-center gap-1.5 bg-vsm-blue/15 border border-vsm-blue/50 rounded-sm pl-2 pr-2.5 py-1 shadow-sm">
+                <Icon name="TramFront" size={14} className="text-white" />
+                <span className="text-[11px] font-bold tracking-[0.18em] text-white uppercase">
+                  ВСМ
+                </span>
+                <span className="w-1 h-1 rounded-full bg-rzd-red animate-pulse" />
+              </div>
               {alertCount > 0 && (
                 <div className="flex items-center gap-1.5 bg-rzd-red/20 border border-rzd-red/40 rounded-sm px-2.5 py-1">
                   <Icon name="Bell" size={12} className="text-white" />
