@@ -20,6 +20,8 @@ interface DailyRecord {
   peopleFact: number;
   createdAt: string;
   note?: string;
+  dayShift: string[];
+  nightShift: string[];
 }
 
 type Tab = "entry" | "reports" | "contractors" | "history";
@@ -44,6 +46,8 @@ const INITIAL_RECORDS: DailyRecord[] = [
     peopleFact: 43,
     createdAt: "2026-05-07T08:00:00",
     note: "",
+    dayShift: ["Иванов А.П.", "Петров С.В.", "Сидоров Н.К."],
+    nightShift: ["Козлов Д.Р."],
   },
   {
     id: "r2",
@@ -54,6 +58,8 @@ const INITIAL_RECORDS: DailyRecord[] = [
     peoplePlan: 30,
     peopleFact: 28,
     createdAt: "2026-05-07T08:15:00",
+    dayShift: ["Новиков В.А."],
+    nightShift: [],
   },
   {
     id: "r3",
@@ -64,6 +70,8 @@ const INITIAL_RECORDS: DailyRecord[] = [
     peoplePlan: 45,
     peopleFact: 44,
     createdAt: "2026-05-06T09:00:00",
+    dayShift: [],
+    nightShift: [],
   },
   {
     id: "r4",
@@ -74,6 +82,8 @@ const INITIAL_RECORDS: DailyRecord[] = [
     peoplePlan: 20,
     peopleFact: 18,
     createdAt: "2026-05-06T09:30:00",
+    dayShift: [],
+    nightShift: [],
   },
 ];
 
@@ -187,9 +197,25 @@ function EntryTab({
     peopleFact: "",
     note: "",
   });
+  const [dayShift, setDayShift] = useState<string[]>([]);
+  const [nightShift, setNightShift] = useState<string[]>([]);
+  const [dayInput, setDayInput] = useState("");
+  const [nightInput, setNightInput] = useState("");
   const [saved, setSaved] = useState(false);
 
   const set = (k: string, v: string) => setForm((f) => ({ ...f, [k]: v }));
+
+  function addPerson(shift: "day" | "night") {
+    const val = shift === "day" ? dayInput.trim() : nightInput.trim();
+    if (!val) return;
+    if (shift === "day") { setDayShift((p) => [...p, val]); setDayInput(""); }
+    else { setNightShift((p) => [...p, val]); setNightInput(""); }
+  }
+
+  function removePerson(shift: "day" | "night", idx: number) {
+    if (shift === "day") setDayShift((p) => p.filter((_, i) => i !== idx));
+    else setNightShift((p) => p.filter((_, i) => i !== idx));
+  }
 
   const todayAlerts = records.filter(
     (r) => r.date === today() && isAlert(r, contractors)
@@ -207,6 +233,8 @@ function EntryTab({
       peopleFact: Number(form.peopleFact),
       createdAt: `${form.date}T${form.time}:00`,
       note: form.note,
+      dayShift: [...dayShift],
+      nightShift: [...nightShift],
     };
     onSave(record);
     setSaved(true);
@@ -219,6 +247,8 @@ function EntryTab({
       peopleFact: "",
       note: "",
     }));
+    setDayShift([]);
+    setNightShift([]);
   }
 
   const c = contractors.find((x) => x.id === form.contractorId);
@@ -422,6 +452,92 @@ function EntryTab({
                 {deviationStr(Number(form.peoplePlan), Number(form.peopleFact))} чел.
               </p>
             )}
+          </div>
+
+          {/* Shifts */}
+          <div>
+            <div className="flex items-center gap-2 mb-3">
+              <div className="h-px flex-1 bg-border" />
+              <span className="text-xs font-semibold uppercase tracking-widest text-muted-foreground px-2 flex items-center gap-1">
+                <Icon name="UserCheck" size={12} />
+                Состав смен
+              </span>
+              <div className="h-px flex-1 bg-border" />
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Day shift */}
+              <div>
+                <p className="text-xs font-semibold text-amber-600 mb-2 flex items-center gap-1">
+                  ☀ День
+                </p>
+                <div className="flex gap-2 mb-2">
+                  <input
+                    type="text"
+                    value={dayInput}
+                    onChange={(e) => setDayInput(e.target.value)}
+                    onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), addPerson("day"))}
+                    placeholder="Фамилия И.О."
+                    className="flex-1 border border-border rounded-sm px-3 py-1.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => addPerson("day")}
+                    className="px-3 py-1.5 bg-amber-50 border border-amber-200 text-amber-700 rounded-sm text-xs font-semibold hover:bg-amber-100 transition-colors"
+                  >
+                    <Icon name="Plus" size={13} />
+                  </button>
+                </div>
+                <div className="space-y-1 min-h-[32px]">
+                  {dayShift.map((name, i) => (
+                    <div key={i} className="flex items-center justify-between bg-amber-50/60 border border-amber-100 rounded-sm px-3 py-1.5">
+                      <span className="text-sm">{name}</span>
+                      <button type="button" onClick={() => removePerson("day", i)} className="text-muted-foreground hover:text-red-500 transition-colors ml-2">
+                        <Icon name="X" size={12} />
+                      </button>
+                    </div>
+                  ))}
+                  {dayShift.length === 0 && (
+                    <p className="text-xs text-muted-foreground italic">Нет сотрудников</p>
+                  )}
+                </div>
+              </div>
+              {/* Night shift */}
+              <div>
+                <p className="text-xs font-semibold text-indigo-500 mb-2 flex items-center gap-1">
+                  🌙 Ночь
+                </p>
+                <div className="flex gap-2 mb-2">
+                  <input
+                    type="text"
+                    value={nightInput}
+                    onChange={(e) => setNightInput(e.target.value)}
+                    onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), addPerson("night"))}
+                    placeholder="Фамилия И.О."
+                    className="flex-1 border border-border rounded-sm px-3 py-1.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => addPerson("night")}
+                    className="px-3 py-1.5 bg-indigo-50 border border-indigo-200 text-indigo-600 rounded-sm text-xs font-semibold hover:bg-indigo-100 transition-colors"
+                  >
+                    <Icon name="Plus" size={13} />
+                  </button>
+                </div>
+                <div className="space-y-1 min-h-[32px]">
+                  {nightShift.map((name, i) => (
+                    <div key={i} className="flex items-center justify-between bg-indigo-50/60 border border-indigo-100 rounded-sm px-3 py-1.5">
+                      <span className="text-sm">{name}</span>
+                      <button type="button" onClick={() => removePerson("night", i)} className="text-muted-foreground hover:text-red-500 transition-colors ml-2">
+                        <Icon name="X" size={12} />
+                      </button>
+                    </div>
+                  ))}
+                  {nightShift.length === 0 && (
+                    <p className="text-xs text-muted-foreground italic">Нет сотрудников</p>
+                  )}
+                </div>
+              </div>
+            </div>
           </div>
 
           {limitAlert && (
