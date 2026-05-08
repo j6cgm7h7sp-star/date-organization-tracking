@@ -91,7 +91,7 @@ export function ContractorsTab({
                     i % 2 !== 0 ? "bg-muted/10" : ""
                   }`}
                 >
-                  <td className="px-5 py-3 font-medium">{ct.name}</td>
+                  <td className="px-5 py-3 font-medium bg-[#ffffff]">{ct.name}</td>
                   <td className="px-4 py-3 text-center">
                     <button
                       onClick={() => onDelete(ct.id)}
