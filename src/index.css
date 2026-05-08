@@ -4,39 +4,46 @@
 
 @layer base {
   :root {
-    --background: 210 20% 97%;
-    --foreground: 215 25% 12%;
+    /* RZD Construction palette */
+    --rzd-red: 3 78% 49%; /* #E2231A — корпоративный красный РЖД */
+    --rzd-red-dark: 3 78% 40%;
+    --rzd-graphite: 220 18% 16%; /* тёмно-серый — навигация/шапка */
+    --rzd-steel: 215 14% 34%;
+    --rzd-sand: 38 35% 95%;
+
+    --background: 210 22% 97%;
+    --foreground: 220 18% 14%;
 
     --card: 0 0% 100%;
-    --card-foreground: 215 25% 12%;
+    --card-foreground: 220 18% 14%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 215 25% 12%;
+    --popover-foreground: 220 18% 14%;
 
-    --primary: 215 60% 22%;
+    --primary: 220 18% 16%;
     --primary-foreground: 0 0% 100%;
 
     --secondary: 210 15% 92%;
-    --secondary-foreground: 215 25% 18%;
+    --secondary-foreground: 220 18% 18%;
 
     --muted: 210 15% 94%;
-    --muted-foreground: 215 15% 48%;
+    --muted-foreground: 215 14% 42%;
 
-    --accent: 38 85% 52%;
+    --accent: 3 78% 49%;
     --accent-foreground: 0 0% 100%;
 
-    --destructive: 0 72% 51%;
+    --destructive: 3 78% 49%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 214 20% 86%;
-    --input: 214 20% 86%;
-    --ring: 215 60% 22%;
+    --border: 214 18% 84%;
+    --input: 214 18% 84%;
+    --ring: 3 78% 49%;
 
     --radius: 4px;
 
     --success: 145 55% 38%;
     --warning: 38 90% 48%;
-    --danger: 0 72% 51%;
+    --danger: 3 78% 49%;
   }
 }
 
@@ -91,7 +98,33 @@
 
   .alert-banner-danger {
     border-left: 4px solid hsl(var(--danger));
-    background: hsl(0 72% 51% / 0.07);
+    background: hsl(3 78% 49% / 0.07);
+  }
+
+  .rzd-stripe {
+    background: linear-gradient(
+      90deg,
+      hsl(var(--rzd-red)) 0%,
+      hsl(var(--rzd-red)) 38%,
+      hsl(220 18% 22%) 38%,
+      hsl(220 18% 22%) 100%
+    );
+  }
+
+  .rzd-accent-bar {
+    background: hsl(var(--rzd-red));
+  }
+
+  .text-rzd-red {
+    color: hsl(var(--rzd-red));
+  }
+
+  .bg-rzd-red {
+    background-color: hsl(var(--rzd-red));
+  }
+
+  .border-rzd-red {
+    border-color: hsl(var(--rzd-red));
   }
 }
 

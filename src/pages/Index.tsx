@@ -98,33 +98,36 @@ export default function Index() {
 
   return (
     <div className="min-h-screen bg-background font-golos">
+      {/* Brand stripe */}
+      <div className="h-1 rzd-stripe sticky top-0 z-40" />
+
       {/* Header */}
-      <header className="bg-primary border-b border-primary/20 shadow-sm sticky top-0 z-30">
+      <header className="bg-primary border-b border-primary/20 shadow-sm sticky top-1 z-30">
         <div className="max-w-6xl mx-auto px-4">
-          <div className="flex items-center justify-between h-14">
+          <div className="flex items-center justify-between h-16">
             <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-sm bg-white/15 flex items-center justify-center">
-                <Icon name="Briefcase" size={17} className="text-white" />
+              <div className="w-9 h-9 rounded-sm bg-rzd-red flex items-center justify-center shadow-sm">
+                <Icon name="TrainFront" size={20} className="text-white" />
               </div>
-              <div>
+              <div className="border-l-2 border-rzd-red pl-3">
                 <h1 className="text-sm font-bold text-white tracking-wide uppercase leading-tight">
-                  Суточный учёт
+                  Суточный отчёт
                 </h1>
-                <p className="text-xs text-white/55 leading-none">
-                  Техника и люди · Подрядчики
+                <p className="text-[11px] text-white/65 leading-tight font-medium tracking-wider uppercase">
+                  РЖД Строительство · Техника и люди
                 </p>
               </div>
             </div>
             <div className="flex items-center gap-3">
               {alertCount > 0 && (
-                <div className="flex items-center gap-1.5 bg-amber-400/20 border border-amber-400/30 rounded-sm px-2.5 py-1">
-                  <Icon name="Bell" size={12} className="text-amber-300" />
-                  <span className="text-xs font-semibold text-amber-200">
+                <div className="flex items-center gap-1.5 bg-rzd-red/20 border border-rzd-red/40 rounded-sm px-2.5 py-1">
+                  <Icon name="Bell" size={12} className="text-white" />
+                  <span className="text-xs font-semibold text-white">
                     {alertCount} откл. сегодня
                   </span>
                 </div>
               )}
-              <span className="text-xs text-white/45 font-mono-data hidden sm:block">
+              <span className="text-xs text-white/55 font-mono-data hidden sm:block">
                 {formatDate(today())}
               </span>
             </div>
@@ -133,7 +136,7 @@ export default function Index() {
       </header>
 
       {/* Nav tabs */}
-      <div className="bg-white border-b border-border sticky top-14 z-20 shadow-sm">
+      <div className="bg-white border-b border-border sticky top-[68px] z-20 shadow-sm">
         <div className="max-w-6xl mx-auto px-4">
           <div className="flex overflow-x-auto">
             {tabs.map((t) => (
@@ -142,7 +145,7 @@ export default function Index() {
                 onClick={() => setTab(t.id)}
                 className={`flex items-center gap-1.5 px-4 py-3 text-xs font-semibold uppercase tracking-wider border-b-2 transition-colors whitespace-nowrap ${
                   tab === t.id
-                    ? "border-primary text-primary"
+                    ? "border-rzd-red text-rzd-red"
                     : "border-transparent text-muted-foreground hover:text-foreground hover:border-border"
                 }`}
               >
@@ -191,11 +194,15 @@ export default function Index() {
         )}
       </main>
 
-      <footer className="border-t border-border mt-8 py-4">
-        <div className="max-w-6xl mx-auto px-4 flex items-center justify-between">
-          <span className="text-xs text-muted-foreground">
-            Суточный учёт подрядных организаций
-          </span>
+      <footer className="border-t border-border mt-8 bg-white">
+        <div className="h-0.5 rzd-accent-bar" />
+        <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Icon name="TrainFront" size={14} className="text-rzd-red" />
+            <span className="text-xs text-muted-foreground uppercase tracking-wider font-semibold">
+              Суточный отчёт · РЖД Строительство
+            </span>
+          </div>
           <span className="text-xs text-muted-foreground font-mono-data">v1.0</span>
         </div>
       </footer>
