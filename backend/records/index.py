@@ -30,7 +30,8 @@ def handler(event: dict, context) -> dict:
                 "SELECT id, to_char(date, 'YYYY-MM-DD'), contractor_id, "
                 "machinery_plan, machinery_fact, people_plan, people_fact, "
                 "COALESCE(note, ''), COALESCE(day_shift, '[]'), COALESCE(night_shift, '[]'), "
-                "to_char(created_at, 'YYYY-MM-DD\"T\"HH24:MI:SS') "
+                "to_char(created_at, 'YYYY-MM-DD\"T\"HH24:MI:SS'), "
+                "COALESCE(shift_type, 'day'), COALESCE(filled_by, '') "
                 "FROM daily_records ORDER BY created_at DESC"
             )
             rows = cur.fetchall()
@@ -56,6 +57,8 @@ def handler(event: dict, context) -> dict:
                     'dayShift': day_shift,
                     'nightShift': night_shift,
                     'createdAt': r[10],
+                    'shiftType': r[11],
+                    'filledBy': r[12],
                 })
             return {
                 'statusCode': 200,
@@ -76,6 +79,9 @@ def handler(event: dict, context) -> dict:
             day_shift = json.dumps(body.get('dayShift') or [], ensure_ascii=False).replace("'", "''")
             night_shift = json.dumps(body.get('nightShift') or [], ensure_ascii=False).replace("'", "''")
             created_at = str(body.get('createdAt', '')).replace("'", "''")
+            shift_type_raw = str(body.get('shiftType', 'day') or 'day')
+            shift_type = 'night' if shift_type_raw == 'night' else 'day'
+            filled_by = str(body.get('filledBy', '') or '').replace("'", "''")
 
             if not rid or not date or not cid:
                 return {
@@ -88,14 +94,17 @@ def handler(event: dict, context) -> dict:
             sql = (
                 f"INSERT INTO daily_records "
                 f"(id, date, contractor_id, machinery_plan, machinery_fact, "
-                f"people_plan, people_fact, note, day_shift, night_shift, created_at) "
+                f"people_plan, people_fact, note, day_shift, night_shift, created_at, "
+                f"shift_type, filled_by) "
                 f"VALUES ('{rid}', '{date}', '{cid}', {mp}, {mf}, {pp}, {pf}, "
-                f"'{note}', '{day_shift}', '{night_shift}', {created_clause}) "
+                f"'{note}', '{day_shift}', '{night_shift}', {created_clause}, "
+                f"'{shift_type}', '{filled_by}') "
                 f"ON CONFLICT (id) DO UPDATE SET "
                 f"date = EXCLUDED.date, contractor_id = EXCLUDED.contractor_id, "
                 f"machinery_plan = EXCLUDED.machinery_plan, machinery_fact = EXCLUDED.machinery_fact, "
                 f"people_plan = EXCLUDED.people_plan, people_fact = EXCLUDED.people_fact, "
-                f"note = EXCLUDED.note, day_shift = EXCLUDED.day_shift, night_shift = EXCLUDED.night_shift"
+                f"note = EXCLUDED.note, day_shift = EXCLUDED.day_shift, night_shift = EXCLUDED.night_shift, "
+                f"shift_type = EXCLUDED.shift_type, filled_by = EXCLUDED.filled_by"
             )
             cur.execute(sql)
             return {

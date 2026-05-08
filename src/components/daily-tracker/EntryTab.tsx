@@ -29,6 +29,7 @@ export default function EntryTab({
     peoplePlan: "",
     peopleFact: "",
     note: "",
+    filledBy: "",
   });
   const [dayShift, setDayShift] = useState<string[]>([]);
   const [nightShift, setNightShift] = useState<string[]>([]);
@@ -67,6 +68,8 @@ export default function EntryTab({
       note: form.note,
       dayShift: [...dayShift],
       nightShift: [...nightShift],
+      shiftType: personShift,
+      filledBy: form.filledBy.trim(),
     };
     onSave(record);
     setSaved(true);
@@ -78,6 +81,7 @@ export default function EntryTab({
       peoplePlan: "",
       peopleFact: "",
       note: "",
+      filledBy: "",
     }));
     setDayShift([]);
     setNightShift([]);
@@ -341,6 +345,20 @@ export default function EntryTab({
                 {deviationStr(Number(form.peoplePlan), Number(form.peopleFact))} чел.
               </p>
             )}
+          </div>
+
+          <div>
+            <label className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1.5">
+              Заполнил (Фамилия И.О.)
+            </label>
+            <input
+              type="text"
+              value={form.filledBy}
+              onChange={(e) => set("filledBy", e.target.value)}
+              required
+              placeholder="Иванов А.П."
+              className="w-full border border-border rounded-sm px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary"
+            />
           </div>
 
           <div>

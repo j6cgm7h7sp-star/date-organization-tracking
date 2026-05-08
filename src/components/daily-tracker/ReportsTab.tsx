@@ -38,14 +38,17 @@ export default function ReportsTab({
     lines.push(`Подрядчик: ${selectedContractorName}`);
     lines.push("");
     lines.push(
-      "Подрядчик;Тех. план;Тех. факт;Откл. тех.;Статус тех.;Люди план;Люди факт;Откл. люди;Статус людей"
+      "Смена;Заполнил;Подрядчик;Тех. план;Тех. факт;Откл. тех.;Статус тех.;Люди план;Люди факт;Откл. люди;Статус людей"
     );
     dayRecords.forEach((r) => {
       const ct = contractors.find((x) => x.id === r.contractorId);
       const macAlert = r.machineryFact < r.machineryPlan ? "Отклонение" : "Норма";
       const peopleAlert = r.peopleFact < r.peoplePlan ? "Отклонение" : "Норма";
+      const shiftLabel = r.shiftType === "night" ? "Ночь" : "День";
       lines.push(
         [
+          shiftLabel,
+          r.filledBy || "—",
           ct?.name ?? "—",
           r.machineryPlan,
           r.machineryFact,
@@ -60,6 +63,8 @@ export default function ReportsTab({
     });
     lines.push(
       [
+        "",
+        "",
         "ИТОГО",
         totalMacPlan,
         totalMacFact,
@@ -208,6 +213,7 @@ export default function ReportsTab({
               <thead>
                 <tr className="border-b border-border bg-muted/20">
                   {[
+                    "Смена / Заполнил",
                     "Подрядчик",
                     "Тех. план",
                     "Тех. факт",
@@ -233,6 +239,7 @@ export default function ReportsTab({
                   const macAlert = r.machineryFact < r.machineryPlan;
                   const peopleAlert = r.peopleFact < r.peoplePlan;
                   const anyAlert = macAlert || peopleAlert;
+                  const isNight = r.shiftType === "night";
                   return (
                     <tr
                       key={r.id}
@@ -240,6 +247,20 @@ export default function ReportsTab({
                         anyAlert ? "bg-amber-50/40" : i % 2 !== 0 ? "bg-muted/10" : ""
                       }`}
                     >
+                      <td className="px-3 py-3">
+                        <div className="flex flex-col gap-0.5">
+                          <span
+                            className={`text-xs font-semibold ${
+                              isNight ? "text-indigo-500" : "text-amber-600"
+                            }`}
+                          >
+                            {isNight ? "🌙 Ночь" : "☀ День"}
+                          </span>
+                          <span className="text-xs text-muted-foreground">
+                            {r.filledBy || "—"}
+                          </span>
+                        </div>
+                      </td>
                       <td className="px-4 py-3 font-medium">
                         <div className="flex items-center gap-1.5">
                           {anyAlert && (
@@ -286,6 +307,7 @@ export default function ReportsTab({
               </tbody>
               <tfoot>
                 <tr className="border-t-2 border-border bg-muted/30 font-semibold">
+                  <td className="px-3 py-3" />
                   <td className="px-4 py-3 text-sm">ИТОГО</td>
                   <td className="px-3 py-3 text-center font-mono-data">{totalMacPlan}</td>
                   <td className="px-3 py-3 text-center font-mono-data">{totalMacFact}</td>

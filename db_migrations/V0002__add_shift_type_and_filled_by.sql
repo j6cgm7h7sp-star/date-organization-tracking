@@ -1,0 +1,3 @@
+ALTER TABLE daily_records 
+  ADD COLUMN IF NOT EXISTS shift_type VARCHAR(8) DEFAULT 'day',
+  ADD COLUMN IF NOT EXISTS filled_by TEXT DEFAULT '';

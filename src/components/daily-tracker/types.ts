@@ -15,6 +15,8 @@ export interface DailyRecord {
   note?: string;
   dayShift: string[];
   nightShift: string[];
+  shiftType?: "day" | "night";
+  filledBy?: string;
 }
 
 export type Tab = "entry" | "reports" | "contractors" | "history";
