@@ -18,6 +18,7 @@ import {
 } from "@/components/daily-tracker/ContractorsAndHistoryTabs";
 
 const CONTRACTORS_STORAGE_KEY = "dt_contractors_v1";
+const RECORDS_STORAGE_KEY = "dt_records_v1";
 
 function loadContractors(): Contractor[] {
   try {
@@ -33,9 +34,27 @@ function loadContractors(): Contractor[] {
   }
 }
 
+function loadRecords(): DailyRecord[] {
+  try {
+    const raw = localStorage.getItem(RECORDS_STORAGE_KEY);
+    if (!raw) return INITIAL_RECORDS;
+    const parsed = JSON.parse(raw);
+    if (Array.isArray(parsed)) {
+      return parsed.map((r) => ({
+        ...r,
+        dayShift: Array.isArray(r.dayShift) ? r.dayShift : [],
+        nightShift: Array.isArray(r.nightShift) ? r.nightShift : [],
+      }));
+    }
+    return INITIAL_RECORDS;
+  } catch {
+    return INITIAL_RECORDS;
+  }
+}
+
 export default function Index() {
   const [contractors, setContractors] = useState<Contractor[]>(() => loadContractors());
-  const [records, setRecords] = useState<DailyRecord[]>(INITIAL_RECORDS);
+  const [records, setRecords] = useState<DailyRecord[]>(() => loadRecords());
   const [tab, setTab] = useState<Tab>("entry");
 
   useEffect(() => {
@@ -45,6 +64,14 @@ export default function Index() {
       // ignore quota errors
     }
   }, [contractors]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(RECORDS_STORAGE_KEY, JSON.stringify(records));
+    } catch {
+      // ignore quota errors
+    }
+  }, [records]);
 
   const alertCount = records.filter(
     (r) => r.date === today() && isAlert(r)
