@@ -38,13 +38,14 @@ export default function ReportsTab({
     lines.push(`Подрядчик: ${selectedContractorName}`);
     lines.push("");
     lines.push(
-      "Смена;Заполнил;Подрядчик;Тех. план;Тех. факт;Откл. тех.;Статус тех.;Люди план;Люди факт;Откл. люди;Статус людей"
+      "Смена;Заполнил;Подрядчик;Тех. план;Тех. факт;Откл. тех.;Статус тех.;Люди план;Люди факт;Откл. люди;Статус людей;Примечание"
     );
     dayRecords.forEach((r) => {
       const ct = contractors.find((x) => x.id === r.contractorId);
       const macAlert = r.machineryFact < r.machineryPlan ? "Отклонение" : "Норма";
       const peopleAlert = r.peopleFact < r.peoplePlan ? "Отклонение" : "Норма";
       const shiftLabel = r.shiftType === "night" ? "Ночь" : "День";
+      const safeNote = (r.note || "").replace(/[;\n\r]/g, " ");
       lines.push(
         [
           shiftLabel,
@@ -58,6 +59,7 @@ export default function ReportsTab({
           r.peopleFact,
           deviationStr(r.peoplePlan, r.peopleFact),
           peopleAlert,
+          safeNote,
         ].join(";")
       );
     });
@@ -74,6 +76,7 @@ export default function ReportsTab({
         totalPeopleFact,
         deviationStr(totalPeoplePlan, totalPeopleFact),
         totalPeopleFact < totalPeoplePlan ? "Отклонение" : "Норма",
+        "",
       ].join(";")
     );
     const ext = format === "excel" ? "csv" : "txt";
@@ -223,6 +226,7 @@ export default function ReportsTab({
                     "Люди факт",
                     "Откл.",
                     "Статус людей",
+                    "Примечание",
                   ].map((h) => (
                     <th
                       key={h}
@@ -301,6 +305,12 @@ export default function ReportsTab({
                           <span className="text-xs text-green-700 font-semibold">✓ Норма</span>
                         )}
                       </td>
+                      <td
+                        className="px-3 py-3 text-xs text-muted-foreground max-w-[200px]"
+                        title={r.note || ""}
+                      >
+                        {r.note || "—"}
+                      </td>
                     </tr>
                   );
                 })}
@@ -337,6 +347,7 @@ export default function ReportsTab({
                       <span className="text-xs text-green-700 font-semibold">✓ Норма</span>
                     )}
                   </td>
+                  <td className="px-3 py-3" />
                 </tr>
               </tfoot>
             </table>
