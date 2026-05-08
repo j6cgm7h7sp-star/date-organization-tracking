@@ -659,8 +659,8 @@ function ReportsTab({
               <tbody>
                 {dayRecords.map((r, i) => {
                   const ct = contractors.find((x) => x.id === r.contractorId);
-                  const macAlert = r.machineryPlan < r.machineryFact;
-                  const peopleAlert = r.peoplePlan < r.peopleFact;
+                  const macAlert = r.machineryFact < r.machineryPlan;
+                  const peopleAlert = r.peopleFact < r.peoplePlan;
                   const anyAlert = macAlert || peopleAlert;
                   return (
                     <tr
@@ -716,7 +716,7 @@ function ReportsTab({
                     </span>
                   </td>
                   <td className="px-3 py-3 text-center">
-                    {totalMacPlan < totalMacFact ? (
+                    {totalMacFact < totalMacPlan ? (
                       <span className="text-xs font-semibold text-amber-600">⚠ Отклонение</span>
                     ) : (
                       <span className="text-xs text-green-700 font-semibold">✓ Норма</span>
