@@ -179,6 +179,7 @@ function EntryTab({
 }) {
   const [form, setForm] = useState({
     date: today(),
+    time: new Date().toTimeString().slice(0, 5),
     contractorId: contractors[0]?.id ?? "",
     machineryPlan: "",
     machineryFact: "",
@@ -204,7 +205,7 @@ function EntryTab({
       machineryFact: Number(form.machineryFact),
       peoplePlan: Number(form.peoplePlan),
       peopleFact: Number(form.peopleFact),
-      createdAt: new Date().toISOString(),
+      createdAt: `${form.date}T${form.time}:00`,
       note: form.note,
     };
     onSave(record);
@@ -245,7 +246,7 @@ function EntryTab({
         </div>
 
         <form onSubmit={handleSubmit} className="p-6 space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
               <label className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1.5">
                 Дата
@@ -254,6 +255,18 @@ function EntryTab({
                 type="date"
                 value={form.date}
                 onChange={(e) => set("date", e.target.value)}
+                required
+                className="w-full border border-border rounded-sm px-3 py-2 text-sm font-mono-data bg-white focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1.5">
+                Время
+              </label>
+              <input
+                type="time"
+                value={form.time}
+                onChange={(e) => set("time", e.target.value)}
                 required
                 className="w-full border border-border rounded-sm px-3 py-2 text-sm font-mono-data bg-white focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary"
               />
