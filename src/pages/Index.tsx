@@ -658,7 +658,7 @@ function ReportsTab({
               <tbody>
                 {dayRecords.map((r, i) => {
                   const ct = contractors.find((x) => x.id === r.contractorId);
-                  const alert = isAlert(r);
+                  const alert = r.machineryPlan < r.machineryFact || r.peoplePlan < r.peopleFact;
                   return (
                     <tr
                       key={r.id}
@@ -686,7 +686,7 @@ function ReportsTab({
                       </td>
                       <td className="px-3 py-3 text-center">
                         {alert ? (
-                          <span className="text-xs font-semibold text-amber-600">⚠ Откл.</span>
+                          <span className="text-xs font-semibold text-amber-600">⚠ Отклонение</span>
                         ) : (
                           <span className="text-xs text-green-700 font-semibold">✓ Норма</span>
                         )}
