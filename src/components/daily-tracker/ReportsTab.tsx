@@ -1,4 +1,7 @@
 import { useState } from "react";
+import * as XLSX from "xlsx";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
 import Icon from "@/components/ui/icon";
 import {
   Contractor,
@@ -32,67 +35,128 @@ export default function ReportsTab({
       ? "все подрядчики"
       : contractors.find((c) => c.id === selectedContractor)?.name ?? "";
 
-  function downloadReport(format: "excel" | "pdf") {
-    const lines: string[] = [];
-    lines.push(`Отчёт за ${formatDate(selectedDate)}`);
-    lines.push(`Подрядчик: ${selectedContractorName}`);
-    lines.push("");
-    lines.push(
-      "Смена;Заполнил;Подрядчик;Тех. план;Тех. факт;Откл. тех.;Статус тех.;Люди план;Люди факт;Откл. люди;Статус людей;Примечание"
-    );
-    dayRecords.forEach((r) => {
+  function buildTableData() {
+    const headers = [
+      "Смена",
+      "Заполнил",
+      "Подрядчик",
+      "Тех. план",
+      "Тех. факт",
+      "Откл.",
+      "Статус техники",
+      "Люди план",
+      "Люди факт",
+      "Откл.",
+      "Статус людей",
+      "Примечание",
+    ];
+    const rows = dayRecords.map((r) => {
       const ct = contractors.find((x) => x.id === r.contractorId);
       const macAlert = r.machineryFact < r.machineryPlan ? "Отклонение" : "Норма";
       const peopleAlert = r.peopleFact < r.peoplePlan ? "Отклонение" : "Норма";
       const shiftLabel = r.shiftType === "night" ? "Ночь" : "День";
-      const safeNote = (r.note || "").replace(/[;\n\r]/g, " ");
-      lines.push(
-        [
-          shiftLabel,
-          r.filledBy || "—",
-          ct?.name ?? "—",
-          r.machineryPlan,
-          r.machineryFact,
-          deviationStr(r.machineryPlan, r.machineryFact),
-          macAlert,
-          r.peoplePlan,
-          r.peopleFact,
-          deviationStr(r.peoplePlan, r.peopleFact),
-          peopleAlert,
-          safeNote,
-        ].join(";")
-      );
+      return [
+        shiftLabel,
+        r.filledBy || "—",
+        ct?.name ?? "—",
+        r.machineryPlan,
+        r.machineryFact,
+        deviationStr(r.machineryPlan, r.machineryFact),
+        macAlert,
+        r.peoplePlan,
+        r.peopleFact,
+        deviationStr(r.peoplePlan, r.peopleFact),
+        peopleAlert,
+        r.note || "",
+      ];
     });
-    lines.push(
-      [
-        "",
-        "",
-        "ИТОГО",
-        totalMacPlan,
-        totalMacFact,
-        deviationStr(totalMacPlan, totalMacFact),
-        totalMacFact < totalMacPlan ? "Отклонение" : "Норма",
-        totalPeoplePlan,
-        totalPeopleFact,
-        deviationStr(totalPeoplePlan, totalPeopleFact),
-        totalPeopleFact < totalPeoplePlan ? "Отклонение" : "Норма",
-        "",
-      ].join(";")
-    );
-    const ext = format === "excel" ? "csv" : "txt";
+    const totals = [
+      "",
+      "",
+      "ИТОГО",
+      totalMacPlan,
+      totalMacFact,
+      deviationStr(totalMacPlan, totalMacFact),
+      totalMacFact < totalMacPlan ? "Отклонение" : "Норма",
+      totalPeoplePlan,
+      totalPeopleFact,
+      deviationStr(totalPeoplePlan, totalPeopleFact),
+      totalPeopleFact < totalPeoplePlan ? "Отклонение" : "Норма",
+      "",
+    ];
+    return { headers, rows, totals };
+  }
+
+  function downloadReport(format: "excel" | "pdf") {
+    const { headers, rows, totals } = buildTableData();
     const safeName = selectedContractorName.replace(/[^а-яА-Яa-zA-Z0-9]/g, "_");
-    const filename = `Отчёт_${selectedDate}_${safeName}.${ext}`;
-    const blob = new Blob(["\ufeff" + lines.join("\n")], {
-      type: format === "excel" ? "text/csv;charset=utf-8" : "application/pdf",
+    const baseTitle = `Отчёт за ${formatDate(selectedDate)} · ${selectedContractorName}`;
+
+    if (format === "excel") {
+      const aoa: (string | number)[][] = [
+        [`Отчёт за ${formatDate(selectedDate)}`],
+        [`Подрядчик: ${selectedContractorName}`],
+        [],
+        headers,
+        ...rows,
+        totals,
+      ];
+      const ws = XLSX.utils.aoa_to_sheet(aoa);
+      ws["!cols"] = [
+        { wch: 7 },
+        { wch: 18 },
+        { wch: 28 },
+        { wch: 10 },
+        { wch: 10 },
+        { wch: 8 },
+        { wch: 16 },
+        { wch: 10 },
+        { wch: 10 },
+        { wch: 8 },
+        { wch: 16 },
+        { wch: 28 },
+      ];
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "Отчёт");
+      XLSX.writeFile(wb, `Отчёт_${selectedDate}_${safeName}.xlsx`);
+      return;
+    }
+
+    const doc = new jsPDF({ orientation: "landscape", unit: "pt", format: "a4" });
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(13);
+    doc.text(baseTitle, 40, 40);
+    autoTable(doc, {
+      head: [headers],
+      body: [...rows.map((r) => r.map((c) => String(c))), totals.map((c) => String(c))],
+      startY: 60,
+      styles: { font: "helvetica", fontSize: 8, cellPadding: 4, overflow: "linebreak" },
+      headStyles: { fillColor: [33, 52, 84], textColor: 255, fontStyle: "bold", halign: "center" },
+      bodyStyles: { halign: "center" },
+      columnStyles: {
+        0: { halign: "center" },
+        1: { halign: "left", cellWidth: 90 },
+        2: { halign: "left", cellWidth: 140 },
+        11: { halign: "left", cellWidth: 130 },
+      },
+      didParseCell: (data) => {
+        const lastRow = data.table.body.length - 1;
+        if (data.section === "body" && data.row.index === lastRow) {
+          data.cell.styles.fillColor = [230, 232, 238];
+          data.cell.styles.fontStyle = "bold";
+        }
+        const text = String(data.cell.raw ?? "");
+        if (data.section === "body" && text === "Отклонение") {
+          data.cell.styles.textColor = [200, 90, 0];
+          data.cell.styles.fontStyle = "bold";
+        }
+        if (data.section === "body" && text === "Норма") {
+          data.cell.styles.textColor = [40, 130, 70];
+          data.cell.styles.fontStyle = "bold";
+        }
+      },
     });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = filename;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+    doc.save(`Отчёт_${selectedDate}_${safeName}.pdf`);
   }
   const totalMacPlan = dayRecords.reduce((s, r) => s + r.machineryPlan, 0);
   const totalMacFact = dayRecords.reduce((s, r) => s + r.machineryFact, 0);
