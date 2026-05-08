@@ -6,8 +6,6 @@ import Icon from "@/components/ui/icon";
 interface Contractor {
   id: string;
   name: string;
-  maxMachinery: number;
-  maxPeople: number;
 }
 
 interface DailyRecord {
@@ -29,10 +27,10 @@ type Tab = "entry" | "reports" | "contractors" | "history";
 // ─── Seed Data ────────────────────────────────────────────────────────────────
 
 const INITIAL_CONTRACTORS: Contractor[] = [
-  { id: "1", name: 'ООО "СтройТехМонтаж"', maxMachinery: 20, maxPeople: 80 },
-  { id: "2", name: 'АО "ПромМеханика"', maxMachinery: 15, maxPeople: 60 },
-  { id: "3", name: 'ИП Кузнецов А.В.', maxMachinery: 5, maxPeople: 25 },
-  { id: "4", name: 'ООО "ТехСервис Урал"', maxMachinery: 12, maxPeople: 50 },
+  { id: "1", name: 'ООО "СтройТехМонтаж"' },
+  { id: "2", name: 'АО "ПромМеханика"' },
+  { id: "3", name: 'ИП Кузнецов А.В.' },
+  { id: "4", name: 'ООО "ТехСервис Урал"' },
 ];
 
 const INITIAL_RECORDS: DailyRecord[] = [
@@ -128,16 +126,12 @@ function deviationStr(plan: number, fact: number) {
   return d > 0 ? `+${d}` : `${d}`;
 }
 
-function isAlert(record: DailyRecord, contractors: Contractor[]) {
-  const c = contractors.find((x) => x.id === record.contractorId);
+function isAlert(record: DailyRecord) {
   const machineryDev = Math.abs(deviation(record.machineryPlan, record.machineryFact));
   const peopleDev = Math.abs(deviation(record.peoplePlan, record.peopleFact));
   const machineryPct = record.machineryPlan > 0 ? machineryDev / record.machineryPlan : 0;
   const peoplePct = record.peoplePlan > 0 ? peopleDev / record.peoplePlan : 0;
-  const overLimit =
-    c &&
-    (record.machineryFact > c.maxMachinery || record.peopleFact > c.maxPeople);
-  return machineryPct >= 0.2 || peoplePct >= 0.2 || !!overLimit;
+  return machineryPct >= 0.2 || peoplePct >= 0.2;
 }
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
@@ -165,12 +159,10 @@ function StatusBadge({ plan, fact }: { plan: number; fact: number }) {
 
 function AlertBanner({
   records,
-  contractors,
 }: {
   records: DailyRecord[];
-  contractors: Contractor[];
 }) {
-  const alerts = records.filter((r) => isAlert(r, contractors));
+  const alerts = records.filter((r) => isAlert(r));
   if (alerts.length === 0) return null;
   return (
     <div className="alert-banner rounded px-4 py-3 mb-4 animate-fade-in">
@@ -181,7 +173,7 @@ function AlertBanner({
             Обнаружены расхождения ({alerts.length})
           </p>
           <p className="text-xs text-amber-700 mt-0.5">
-            Отклонение план/факт ≥20% или превышение лимита подрядчика
+            Отклонение план/факт ≥20%
           </p>
         </div>
       </div>
@@ -232,7 +224,7 @@ function EntryTab({
   }
 
   const todayAlerts = records.filter(
-    (r) => r.date === today() && isAlert(r, contractors)
+    (r) => r.date === today() && isAlert(r)
   );
 
   function handleSubmit(e: React.FormEvent) {
@@ -265,18 +257,10 @@ function EntryTab({
     setNightShift([]);
   }
 
-  const c = contractors.find((x) => x.id === form.contractorId);
-  const macFact = Number(form.machineryFact);
-  const peopleFact = Number(form.peopleFact);
-  const limitAlert =
-    c &&
-    ((macFact > 0 && macFact > c.maxMachinery) ||
-      (peopleFact > 0 && peopleFact > c.maxPeople));
-
   return (
     <div className="animate-slide-up">
       {todayAlerts.length > 0 && (
-        <AlertBanner records={todayAlerts} contractors={contractors} />
+        <AlertBanner records={todayAlerts} />
       )}
 
       <div className="bg-white border border-border rounded-sm shadow-sm">
@@ -401,11 +385,6 @@ function EntryTab({
                 </option>
               ))}
             </select>
-            {c && (
-              <p className="text-xs text-muted-foreground mt-1">
-                Лимит: техника — {c.maxMachinery} ед., люди — {c.maxPeople} чел.
-              </p>
-            )}
           </div>
 
           {/* Machinery */}
@@ -525,18 +504,6 @@ function EntryTab({
               </p>
             )}
           </div>
-
-          {limitAlert && (
-            <div className="alert-banner-danger rounded px-3 py-2">
-              <div className="flex items-center gap-2">
-                <Icon name="AlertOctagon" size={14} className="text-red-600 shrink-0" />
-                <p className="text-xs text-red-700 font-medium">
-                  Превышен лимит подрядчика по{" "}
-                  {c && macFact > c.maxMachinery ? "технике" : "людям"}
-                </p>
-              </div>
-            </div>
-          )}
 
           <div>
             <label className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1.5">
@@ -691,7 +658,7 @@ function ReportsTab({
               <tbody>
                 {dayRecords.map((r, i) => {
                   const ct = contractors.find((x) => x.id === r.contractorId);
-                  const alert = isAlert(r, contractors);
+                  const alert = isAlert(r);
                   return (
                     <tr
                       key={r.id}
@@ -778,7 +745,7 @@ function ContractorsTab({
   onAdd: (c: Contractor) => void;
   onDelete: (id: string) => void;
 }) {
-  const [form, setForm] = useState({ name: "", maxMachinery: "", maxPeople: "" });
+  const [form, setForm] = useState({ name: "" });
   const [adding, setAdding] = useState(false);
 
   function handleAdd(e: React.FormEvent) {
@@ -786,10 +753,8 @@ function ContractorsTab({
     onAdd({
       id: `c${Date.now()}`,
       name: form.name,
-      maxMachinery: Number(form.maxMachinery),
-      maxPeople: Number(form.maxPeople),
     });
-    setForm({ name: "", maxMachinery: "", maxPeople: "" });
+    setForm({ name: "" });
     setAdding(false);
   }
 
@@ -819,54 +784,24 @@ function ContractorsTab({
             onSubmit={handleAdd}
             className="px-5 py-4 border-b border-border bg-muted/20 animate-fade-in"
           >
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-              <div className="md:col-span-1">
-                <label className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1">
-                  Название организации
-                </label>
-                <input
-                  required
-                  value={form.name}
-                  onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
-                  placeholder='ООО "Название"'
-                  className="w-full border border-border rounded-sm px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-primary/40"
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1">
-                  Макс. техника, ед.
-                </label>
-                <input
-                  required
-                  type="number"
-                  min="0"
-                  value={form.maxMachinery}
-                  onChange={(e) => setForm((f) => ({ ...f, maxMachinery: e.target.value }))}
-                  placeholder="0"
-                  className="w-full border border-border rounded-sm px-3 py-2 text-sm font-mono-data bg-white focus:outline-none focus:ring-2 focus:ring-primary/40"
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1">
-                  Макс. люди, чел.
-                </label>
-                <input
-                  required
-                  type="number"
-                  min="0"
-                  value={form.maxPeople}
-                  onChange={(e) => setForm((f) => ({ ...f, maxPeople: e.target.value }))}
-                  placeholder="0"
-                  className="w-full border border-border rounded-sm px-3 py-2 text-sm font-mono-data bg-white focus:outline-none focus:ring-2 focus:ring-primary/40"
-                />
-              </div>
+            <label className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1">
+              Название организации
+            </label>
+            <div className="flex gap-2">
+              <input
+                required
+                value={form.name}
+                onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
+                placeholder='ООО "Название"'
+                className="flex-1 border border-border rounded-sm px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-primary/40"
+              />
+              <button
+                type="submit"
+                className="bg-primary text-primary-foreground px-5 py-2 text-xs font-semibold rounded-sm hover:bg-primary/90 transition-colors whitespace-nowrap"
+              >
+                Добавить
+              </button>
             </div>
-            <button
-              type="submit"
-              className="mt-3 bg-primary text-primary-foreground px-5 py-2 text-xs font-semibold rounded-sm hover:bg-primary/90 transition-colors"
-            >
-              Добавить организацию
-            </button>
           </form>
         )}
 
@@ -877,13 +812,7 @@ function ContractorsTab({
                 <th className="text-left px-5 py-2.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                   Организация
                 </th>
-                <th className="text-center px-4 py-2.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                  Лимит техники
-                </th>
-                <th className="text-center px-4 py-2.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                  Лимит людей
-                </th>
-                <th className="text-center px-4 py-2.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                <th className="text-center px-4 py-2.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground w-32">
                   Действия
                 </th>
               </tr>
@@ -897,8 +826,6 @@ function ContractorsTab({
                   }`}
                 >
                   <td className="px-5 py-3 font-medium">{ct.name}</td>
-                  <td className="px-4 py-3 text-center font-mono-data">{ct.maxMachinery} ед.</td>
-                  <td className="px-4 py-3 text-center font-mono-data">{ct.maxPeople} чел.</td>
                   <td className="px-4 py-3 text-center">
                     <button
                       onClick={() => onDelete(ct.id)}
@@ -987,7 +914,7 @@ function HistoryTab({
               ) : (
                 filtered.map((r, i) => {
                   const ct = contractors.find((x) => x.id === r.contractorId);
-                  const alert = isAlert(r, contractors);
+                  const alert = isAlert(r);
                   const isOpen = expanded === r.id;
                   const hasShift = (r.dayShift?.length ?? 0) > 0 || (r.nightShift?.length ?? 0) > 0;
                   return (
@@ -1116,7 +1043,7 @@ export default function Index() {
   const [tab, setTab] = useState<Tab>("entry");
 
   const alertCount = records.filter(
-    (r) => r.date === today() && isAlert(r, contractors)
+    (r) => r.date === today() && isAlert(r)
   ).length;
 
   const tabs: { id: Tab; label: string; icon: string }[] = [
