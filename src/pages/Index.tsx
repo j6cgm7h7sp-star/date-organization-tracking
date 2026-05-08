@@ -641,10 +641,11 @@ function ReportsTab({
                     "Тех. план",
                     "Тех. факт",
                     "Откл.",
+                    "Статус техники",
                     "Люди план",
                     "Люди факт",
                     "Откл.",
-                    "Статус",
+                    "Статус людей",
                   ].map((h) => (
                     <th
                       key={h}
@@ -658,17 +659,19 @@ function ReportsTab({
               <tbody>
                 {dayRecords.map((r, i) => {
                   const ct = contractors.find((x) => x.id === r.contractorId);
-                  const alert = r.machineryPlan < r.machineryFact || r.peoplePlan < r.peopleFact;
+                  const macAlert = r.machineryPlan < r.machineryFact;
+                  const peopleAlert = r.peoplePlan < r.peopleFact;
+                  const anyAlert = macAlert || peopleAlert;
                   return (
                     <tr
                       key={r.id}
                       className={`border-b border-border/50 hover:bg-muted/20 transition-colors ${
-                        alert ? "bg-amber-50/40" : i % 2 !== 0 ? "bg-muted/10" : ""
+                        anyAlert ? "bg-amber-50/40" : i % 2 !== 0 ? "bg-muted/10" : ""
                       }`}
                     >
                       <td className="px-4 py-3 font-medium">
                         <div className="flex items-center gap-1.5">
-                          {alert && (
+                          {anyAlert && (
                             <Icon name="AlertTriangle" size={12} className="text-amber-500 shrink-0" />
                           )}
                           {ct?.name ?? "—"}
@@ -679,13 +682,20 @@ function ReportsTab({
                       <td className="px-3 py-3 text-center">
                         <StatusBadge plan={r.machineryPlan} fact={r.machineryFact} />
                       </td>
+                      <td className="px-3 py-3 text-center">
+                        {macAlert ? (
+                          <span className="text-xs font-semibold text-amber-600">⚠ Отклонение</span>
+                        ) : (
+                          <span className="text-xs text-green-700 font-semibold">✓ Норма</span>
+                        )}
+                      </td>
                       <td className="px-3 py-3 text-center font-mono-data">{r.peoplePlan}</td>
                       <td className="px-3 py-3 text-center font-mono-data">{r.peopleFact}</td>
                       <td className="px-3 py-3 text-center">
                         <StatusBadge plan={r.peoplePlan} fact={r.peopleFact} />
                       </td>
                       <td className="px-3 py-3 text-center">
-                        {alert ? (
+                        {peopleAlert ? (
                           <span className="text-xs font-semibold text-amber-600">⚠ Отклонение</span>
                         ) : (
                           <span className="text-xs text-green-700 font-semibold">✓ Норма</span>
@@ -705,6 +715,13 @@ function ReportsTab({
                       {deviationStr(totalMacPlan, totalMacFact)}
                     </span>
                   </td>
+                  <td className="px-3 py-3 text-center">
+                    {totalMacPlan < totalMacFact ? (
+                      <span className="text-xs font-semibold text-amber-600">⚠ Отклонение</span>
+                    ) : (
+                      <span className="text-xs text-green-700 font-semibold">✓ Норма</span>
+                    )}
+                  </td>
                   <td className="px-3 py-3 text-center font-mono-data">{totalPeoplePlan}</td>
                   <td className="px-3 py-3 text-center font-mono-data">{totalPeopleFact}</td>
                   <td className="px-3 py-3 text-center">
@@ -712,7 +729,13 @@ function ReportsTab({
                       {deviationStr(totalPeoplePlan, totalPeopleFact)}
                     </span>
                   </td>
-                  <td />
+                  <td className="px-3 py-3 text-center">
+                    {totalPeoplePlan < totalPeopleFact ? (
+                      <span className="text-xs font-semibold text-amber-600">⚠ Отклонение</span>
+                    ) : (
+                      <span className="text-xs text-green-700 font-semibold">✓ Норма</span>
+                    )}
+                  </td>
                 </tr>
               </tfoot>
             </table>
