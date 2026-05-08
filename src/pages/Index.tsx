@@ -3,8 +3,6 @@ import Icon from "@/components/ui/icon";
 import {
   Contractor,
   DailyRecord,
-  INITIAL_CONTRACTORS,
-  INITIAL_RECORDS,
   Tab,
   formatDate,
   isAlert,
@@ -16,62 +14,76 @@ import {
   ContractorsTab,
   HistoryTab,
 } from "@/components/daily-tracker/ContractorsAndHistoryTabs";
-
-const CONTRACTORS_STORAGE_KEY = "dt_contractors_v1";
-const RECORDS_STORAGE_KEY = "dt_records_v1";
-
-function loadContractors(): Contractor[] {
-  try {
-    const raw = localStorage.getItem(CONTRACTORS_STORAGE_KEY);
-    if (!raw) return INITIAL_CONTRACTORS;
-    const parsed = JSON.parse(raw);
-    if (Array.isArray(parsed) && parsed.every((c) => c && typeof c.id === "string" && typeof c.name === "string")) {
-      return parsed;
-    }
-    return INITIAL_CONTRACTORS;
-  } catch {
-    return INITIAL_CONTRACTORS;
-  }
-}
-
-function loadRecords(): DailyRecord[] {
-  try {
-    const raw = localStorage.getItem(RECORDS_STORAGE_KEY);
-    if (!raw) return INITIAL_RECORDS;
-    const parsed = JSON.parse(raw);
-    if (Array.isArray(parsed)) {
-      return parsed.map((r) => ({
-        ...r,
-        dayShift: Array.isArray(r.dayShift) ? r.dayShift : [],
-        nightShift: Array.isArray(r.nightShift) ? r.nightShift : [],
-      }));
-    }
-    return INITIAL_RECORDS;
-  } catch {
-    return INITIAL_RECORDS;
-  }
-}
+import {
+  fetchContractors,
+  fetchRecords,
+  saveContractor,
+  saveRecord,
+  deleteContractor as apiDeleteContractor,
+  deleteRecord as apiDeleteRecord,
+} from "@/components/daily-tracker/api";
 
 export default function Index() {
-  const [contractors, setContractors] = useState<Contractor[]>(() => loadContractors());
-  const [records, setRecords] = useState<DailyRecord[]>(() => loadRecords());
+  const [contractors, setContractors] = useState<Contractor[]>([]);
+  const [records, setRecords] = useState<DailyRecord[]>([]);
   const [tab, setTab] = useState<Tab>("entry");
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    try {
-      localStorage.setItem(CONTRACTORS_STORAGE_KEY, JSON.stringify(contractors));
-    } catch {
-      // ignore quota errors
-    }
-  }, [contractors]);
+    let mounted = true;
+    (async () => {
+      try {
+        const [c, r] = await Promise.all([fetchContractors(), fetchRecords()]);
+        if (mounted) {
+          setContractors(c);
+          setRecords(r);
+        }
+      } catch (e) {
+        console.error("Ошибка загрузки данных", e);
+      } finally {
+        if (mounted) setLoading(false);
+      }
+    })();
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
-  useEffect(() => {
+  async function handleAddContractor(c: Contractor) {
+    setContractors((prev) => [...prev, c]);
     try {
-      localStorage.setItem(RECORDS_STORAGE_KEY, JSON.stringify(records));
-    } catch {
-      // ignore quota errors
+      await saveContractor(c);
+    } catch (e) {
+      console.error(e);
     }
-  }, [records]);
+  }
+
+  async function handleDeleteContractor(id: string) {
+    setContractors((prev) => prev.filter((ct) => ct.id !== id));
+    try {
+      await apiDeleteContractor(id);
+    } catch (e) {
+      console.error(e);
+    }
+  }
+
+  async function handleSaveRecord(r: DailyRecord) {
+    setRecords((prev) => [r, ...prev]);
+    try {
+      await saveRecord(r);
+    } catch (e) {
+      console.error(e);
+    }
+  }
+
+  async function handleDeleteRecord(id: string) {
+    setRecords((prev) => prev.filter((r) => r.id !== id));
+    try {
+      await apiDeleteRecord(id);
+    } catch (e) {
+      console.error(e);
+    }
+  }
 
   const alertCount = records.filter(
     (r) => r.date === today() && isAlert(r)
@@ -144,29 +156,38 @@ export default function Index() {
 
       {/* Content */}
       <main className="max-w-6xl mx-auto px-4 py-6">
-        {tab === "entry" && (
-          <EntryTab
-            contractors={contractors}
-            records={records}
-            onSave={(r) => setRecords((prev) => [r, ...prev])}
-          />
-        )}
-        {tab === "reports" && (
-          <ReportsTab contractors={contractors} records={records} />
-        )}
-        {tab === "contractors" && (
-          <ContractorsTab
-            contractors={contractors}
-            onAdd={(ct) => setContractors((prev) => [...prev, ct])}
-            onDelete={(id) => setContractors((prev) => prev.filter((ct) => ct.id !== id))}
-          />
-        )}
-        {tab === "history" && (
-          <HistoryTab
-            contractors={contractors}
-            records={records}
-            onDelete={(id) => setRecords((prev) => prev.filter((r) => r.id !== id))}
-          />
+        {loading ? (
+          <div className="text-center py-16 text-muted-foreground text-sm flex items-center justify-center gap-2">
+            <Icon name="Loader2" size={16} className="animate-spin" />
+            Загрузка данных...
+          </div>
+        ) : (
+          <>
+            {tab === "entry" && (
+              <EntryTab
+                contractors={contractors}
+                records={records}
+                onSave={handleSaveRecord}
+              />
+            )}
+            {tab === "reports" && (
+              <ReportsTab contractors={contractors} records={records} />
+            )}
+            {tab === "contractors" && (
+              <ContractorsTab
+                contractors={contractors}
+                onAdd={handleAddContractor}
+                onDelete={handleDeleteContractor}
+              />
+            )}
+            {tab === "history" && (
+              <HistoryTab
+                contractors={contractors}
+                records={records}
+                onDelete={handleDeleteRecord}
+              />
+            )}
+          </>
         )}
       </main>
 
