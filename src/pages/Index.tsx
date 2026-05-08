@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Icon from "@/components/ui/icon";
 import {
   Contractor,
@@ -17,10 +17,34 @@ import {
   HistoryTab,
 } from "@/components/daily-tracker/ContractorsAndHistoryTabs";
 
+const CONTRACTORS_STORAGE_KEY = "dt_contractors_v1";
+
+function loadContractors(): Contractor[] {
+  try {
+    const raw = localStorage.getItem(CONTRACTORS_STORAGE_KEY);
+    if (!raw) return INITIAL_CONTRACTORS;
+    const parsed = JSON.parse(raw);
+    if (Array.isArray(parsed) && parsed.every((c) => c && typeof c.id === "string" && typeof c.name === "string")) {
+      return parsed;
+    }
+    return INITIAL_CONTRACTORS;
+  } catch {
+    return INITIAL_CONTRACTORS;
+  }
+}
+
 export default function Index() {
-  const [contractors, setContractors] = useState<Contractor[]>(INITIAL_CONTRACTORS);
+  const [contractors, setContractors] = useState<Contractor[]>(() => loadContractors());
   const [records, setRecords] = useState<DailyRecord[]>(INITIAL_RECORDS);
   const [tab, setTab] = useState<Tab>("entry");
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(CONTRACTORS_STORAGE_KEY, JSON.stringify(contractors));
+    } catch {
+      // ignore quota errors
+    }
+  }, [contractors]);
 
   const alertCount = records.filter(
     (r) => r.date === today() && isAlert(r)
