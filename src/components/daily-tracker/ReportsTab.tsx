@@ -256,7 +256,7 @@ export default function ReportsTab({
                           >
                             {isNight ? "🌙 Ночь" : "☀ День"}
                           </span>
-                          <span className="text-xs text-muted-foreground">
+                          <span className="text-xs font-medium text-foreground">
                             {r.filledBy || "—"}
                           </span>
                         </div>
