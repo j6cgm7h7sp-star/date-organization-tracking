@@ -552,8 +552,69 @@ function ReportsTab({
     b.localeCompare(a)
   );
   const [selectedDate, setSelectedDate] = useState(dates[0] ?? today());
+  const [selectedContractor, setSelectedContractor] = useState<string>("all");
 
-  const dayRecords = records.filter((r) => r.date === selectedDate);
+  const dayRecords = records
+    .filter((r) => r.date === selectedDate)
+    .filter((r) => selectedContractor === "all" || r.contractorId === selectedContractor);
+
+  const selectedContractorName =
+    selectedContractor === "all"
+      ? "все подрядчики"
+      : contractors.find((c) => c.id === selectedContractor)?.name ?? "";
+
+  function downloadReport(format: "excel" | "pdf") {
+    const lines: string[] = [];
+    lines.push(`Отчёт за ${formatDate(selectedDate)}`);
+    lines.push(`Подрядчик: ${selectedContractorName}`);
+    lines.push("");
+    lines.push("Подрядчик;Тех. план;Тех. факт;Откл. тех.;Статус тех.;Люди план;Люди факт;Откл. люди;Статус людей");
+    dayRecords.forEach((r) => {
+      const ct = contractors.find((x) => x.id === r.contractorId);
+      const macAlert = r.machineryFact < r.machineryPlan ? "Отклонение" : "Норма";
+      const peopleAlert = r.peopleFact < r.peoplePlan ? "Отклонение" : "Норма";
+      lines.push(
+        [
+          ct?.name ?? "—",
+          r.machineryPlan,
+          r.machineryFact,
+          deviationStr(r.machineryPlan, r.machineryFact),
+          macAlert,
+          r.peoplePlan,
+          r.peopleFact,
+          deviationStr(r.peoplePlan, r.peopleFact),
+          peopleAlert,
+        ].join(";")
+      );
+    });
+    lines.push(
+      [
+        "ИТОГО",
+        totalMacPlan,
+        totalMacFact,
+        deviationStr(totalMacPlan, totalMacFact),
+        totalMacFact < totalMacPlan ? "Отклонение" : "Норма",
+        totalPeoplePlan,
+        totalPeopleFact,
+        deviationStr(totalPeoplePlan, totalPeopleFact),
+        totalPeopleFact < totalPeoplePlan ? "Отклонение" : "Норма",
+      ].join(";")
+    );
+    const ext = format === "excel" ? "csv" : "txt";
+    const safeName = selectedContractorName.replace(/[^а-яА-Яa-zA-Z0-9]/g, "_");
+    const filename = `Отчёт_${selectedDate}_${safeName}.${ext}`;
+    const blob = new Blob(["\ufeff" + lines.join("\n")], {
+      type: format === "excel" ? "text/csv;charset=utf-8" : "application/pdf",
+    });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
   const totalMacPlan = dayRecords.reduce((s, r) => s + r.machineryPlan, 0);
   const totalMacFact = dayRecords.reduce((s, r) => s + r.machineryFact, 0);
   const totalPeoplePlan = dayRecords.reduce((s, r) => s + r.peoplePlan, 0);
@@ -582,21 +643,40 @@ function ReportsTab({
 
   return (
     <div className="animate-slide-up space-y-4">
-      <div className="flex items-center gap-3">
-        <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-          Дата отчёта:
-        </label>
-        <select
-          value={selectedDate}
-          onChange={(e) => setSelectedDate(e.target.value)}
-          className="border border-border rounded-sm px-3 py-1.5 text-sm font-mono-data bg-white focus:outline-none focus:ring-2 focus:ring-primary/40"
-        >
-          {dates.map((d) => (
-            <option key={d} value={d}>
-              {formatDate(d)}
-            </option>
-          ))}
-        </select>
+      <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
+        <div className="flex items-center gap-3">
+          <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+            Дата отчёта:
+          </label>
+          <select
+            value={selectedDate}
+            onChange={(e) => setSelectedDate(e.target.value)}
+            className="border border-border rounded-sm px-3 py-1.5 text-sm font-mono-data bg-white focus:outline-none focus:ring-2 focus:ring-primary/40"
+          >
+            {dates.map((d) => (
+              <option key={d} value={d}>
+                {formatDate(d)}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div className="flex items-center gap-3">
+          <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+            Подрядчик:
+          </label>
+          <select
+            value={selectedContractor}
+            onChange={(e) => setSelectedContractor(e.target.value)}
+            className="border border-border rounded-sm px-3 py-1.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-primary/40 min-w-[220px]"
+          >
+            <option value="all">Все подрядчики</option>
+            {contractors.map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.name}
+              </option>
+            ))}
+          </select>
+        </div>
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -625,6 +705,9 @@ function ReportsTab({
         <div className="px-5 py-3 border-b border-border bg-muted/40">
           <h3 className="text-sm font-semibold text-foreground">
             Детализация за {formatDate(selectedDate)}
+            {selectedContractor !== "all" && (
+              <span className="text-muted-foreground font-normal"> · {selectedContractorName}</span>
+            )}
           </h3>
         </div>
         {dayRecords.length === 0 ? (
@@ -743,15 +826,28 @@ function ReportsTab({
         )}
       </div>
 
-      <div className="flex gap-2">
-        <button className="flex items-center gap-1.5 px-4 py-2 text-xs font-semibold border border-border rounded-sm bg-white hover:bg-muted/40 transition-colors text-foreground">
+      <div className="flex flex-wrap items-center gap-2">
+        <button
+          onClick={() => downloadReport("excel")}
+          disabled={dayRecords.length === 0}
+          className="flex items-center gap-1.5 px-4 py-2 text-xs font-semibold border border-border rounded-sm bg-white hover:bg-muted/40 transition-colors text-foreground disabled:opacity-50 disabled:cursor-not-allowed"
+        >
           <Icon name="FileSpreadsheet" size={14} />
-          Экспорт в Excel
+          Скачать Excel
         </button>
-        <button className="flex items-center gap-1.5 px-4 py-2 text-xs font-semibold border border-border rounded-sm bg-white hover:bg-muted/40 transition-colors text-foreground">
+        <button
+          onClick={() => downloadReport("pdf")}
+          disabled={dayRecords.length === 0}
+          className="flex items-center gap-1.5 px-4 py-2 text-xs font-semibold border border-border rounded-sm bg-white hover:bg-muted/40 transition-colors text-foreground disabled:opacity-50 disabled:cursor-not-allowed"
+        >
           <Icon name="FileText" size={14} />
-          Экспорт в PDF
+          Скачать PDF
         </button>
+        {selectedContractor !== "all" && (
+          <span className="text-xs text-muted-foreground ml-2">
+            Будет выгружен отчёт по: <b className="text-foreground">{selectedContractorName}</b>
+          </span>
+        )}
       </div>
     </div>
   );
