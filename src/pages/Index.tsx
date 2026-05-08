@@ -943,6 +943,7 @@ function HistoryTab({
   onDelete: (id: string) => void;
 }) {
   const [filter, setFilter] = useState("");
+  const [expanded, setExpanded] = useState<string | null>(null);
 
   const sorted = [...records].sort((a, b) => b.createdAt.localeCompare(a.createdAt));
   const filtered = sorted.filter((r) => {
@@ -978,7 +979,7 @@ function HistoryTab({
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-border bg-muted/20">
-                {["Дата", "Подрядчик", "Тех. П/Ф", "Люди П/Ф", "Статус", "Примечание", ""].map(
+                {["", "Дата", "Подрядчик", "Тех. П/Ф", "Люди П/Ф", "Статус", "Примечание", ""].map(
                   (h) => (
                     <th
                       key={h}
@@ -993,7 +994,7 @@ function HistoryTab({
             <tbody>
               {filtered.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="px-4 py-10 text-center text-muted-foreground">
+                  <td colSpan={8} className="px-4 py-10 text-center text-muted-foreground">
                     Нет записей
                   </td>
                 </tr>
@@ -1001,49 +1002,104 @@ function HistoryTab({
                 filtered.map((r, i) => {
                   const ct = contractors.find((x) => x.id === r.contractorId);
                   const alert = isAlert(r, contractors);
+                  const isOpen = expanded === r.id;
+                  const hasShift = (r.dayShift?.length ?? 0) > 0 || (r.nightShift?.length ?? 0) > 0;
                   return (
-                    <tr
-                      key={r.id}
-                      className={`border-b border-border/50 hover:bg-muted/20 transition-colors ${
-                        alert ? "bg-amber-50/30" : i % 2 !== 0 ? "bg-muted/10" : ""
-                      }`}
-                    >
-                      <td className="px-4 py-2.5 font-mono-data text-xs whitespace-nowrap">
-                        {formatDate(r.date)}
-                      </td>
-                      <td className="px-4 py-2.5 font-medium text-xs">
-                        <div className="flex items-center gap-1">
-                          {alert && (
-                            <Icon name="AlertTriangle" size={11} className="text-amber-500" />
+                    <>
+                      <tr
+                        key={r.id}
+                        onClick={() => setExpanded(isOpen ? null : r.id)}
+                        className={`border-b border-border/50 transition-colors cursor-pointer ${
+                          alert ? "bg-amber-50/30" : i % 2 !== 0 ? "bg-muted/10" : ""
+                        } hover:bg-muted/20`}
+                      >
+                        <td className="px-3 py-2.5 text-center w-6">
+                          {hasShift && (
+                            <Icon
+                              name={isOpen ? "ChevronDown" : "ChevronRight"}
+                              size={13}
+                              className="text-muted-foreground"
+                            />
                           )}
-                          {ct?.name ?? "—"}
-                        </div>
-                      </td>
-                      <td className="px-3 py-2.5 text-center text-xs font-mono-data">
-                        {r.machineryPlan}/{r.machineryFact}
-                      </td>
-                      <td className="px-3 py-2.5 text-center text-xs font-mono-data">
-                        {r.peoplePlan}/{r.peopleFact}
-                      </td>
-                      <td className="px-3 py-2.5 text-center">
-                        {alert ? (
-                          <span className="text-xs font-semibold text-amber-600">⚠</span>
-                        ) : (
-                          <span className="text-xs text-green-700 font-semibold">✓</span>
-                        )}
-                      </td>
-                      <td className="px-3 py-2.5 text-xs text-muted-foreground max-w-[160px] truncate">
-                        {r.note || "—"}
-                      </td>
-                      <td className="px-3 py-2.5 text-center">
-                        <button
-                          onClick={() => onDelete(r.id)}
-                          className="text-muted-foreground hover:text-red-500 transition-colors"
-                        >
-                          <Icon name="Trash2" size={13} />
-                        </button>
-                      </td>
-                    </tr>
+                        </td>
+                        <td className="px-4 py-2.5 font-mono-data text-xs whitespace-nowrap">
+                          {formatDate(r.date)}
+                        </td>
+                        <td className="px-4 py-2.5 font-medium text-xs">
+                          <div className="flex items-center gap-1">
+                            {alert && (
+                              <Icon name="AlertTriangle" size={11} className="text-amber-500" />
+                            )}
+                            {ct?.name ?? "—"}
+                          </div>
+                        </td>
+                        <td className="px-3 py-2.5 text-center text-xs font-mono-data">
+                          {r.machineryPlan}/{r.machineryFact}
+                        </td>
+                        <td className="px-3 py-2.5 text-center text-xs font-mono-data">
+                          {r.peoplePlan}/{r.peopleFact}
+                        </td>
+                        <td className="px-3 py-2.5 text-center">
+                          {alert ? (
+                            <span className="text-xs font-semibold text-amber-600">⚠</span>
+                          ) : (
+                            <span className="text-xs text-green-700 font-semibold">✓</span>
+                          )}
+                        </td>
+                        <td className="px-3 py-2.5 text-xs text-muted-foreground max-w-[160px] truncate">
+                          {r.note || "—"}
+                        </td>
+                        <td className="px-3 py-2.5 text-center" onClick={(e) => e.stopPropagation()}>
+                          <button
+                            onClick={() => onDelete(r.id)}
+                            className="text-muted-foreground hover:text-red-500 transition-colors"
+                          >
+                            <Icon name="Trash2" size={13} />
+                          </button>
+                        </td>
+                      </tr>
+                      {isOpen && hasShift && (
+                        <tr key={`${r.id}-shift`} className="border-b border-border/40 bg-muted/5">
+                          <td />
+                          <td colSpan={7} className="px-4 py-3">
+                            <div className="grid grid-cols-2 gap-4">
+                              <div>
+                                <p className="text-xs font-semibold text-amber-600 mb-1.5 flex items-center gap-1">
+                                  ☀ День
+                                </p>
+                                {(r.dayShift?.length ?? 0) > 0 ? (
+                                  <div className="flex flex-wrap gap-1.5">
+                                    {r.dayShift.map((name, idx) => (
+                                      <span key={idx} className="bg-amber-50 border border-amber-100 text-amber-800 text-xs px-2 py-0.5 rounded-sm">
+                                        {name}
+                                      </span>
+                                    ))}
+                                  </div>
+                                ) : (
+                                  <span className="text-xs text-muted-foreground italic">Нет сотрудников</span>
+                                )}
+                              </div>
+                              <div>
+                                <p className="text-xs font-semibold text-indigo-500 mb-1.5 flex items-center gap-1">
+                                  🌙 Ночь
+                                </p>
+                                {(r.nightShift?.length ?? 0) > 0 ? (
+                                  <div className="flex flex-wrap gap-1.5">
+                                    {r.nightShift.map((name, idx) => (
+                                      <span key={idx} className="bg-indigo-50 border border-indigo-100 text-indigo-700 text-xs px-2 py-0.5 rounded-sm">
+                                        {name}
+                                      </span>
+                                    ))}
+                                  </div>
+                                ) : (
+                                  <span className="text-xs text-muted-foreground italic">Нет сотрудников</span>
+                                )}
+                              </div>
+                            </div>
+                          </td>
+                        </tr>
+                      )}
+                    </>
                   );
                 })
               )}
