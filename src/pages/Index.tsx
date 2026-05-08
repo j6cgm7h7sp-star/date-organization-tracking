@@ -290,8 +290,7 @@ function EntryTab({
         </div>
 
         <form onSubmit={handleSubmit} className="p-6 space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
+          <div>
               <label className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1.5">
                 Дата
               </label>
@@ -307,29 +306,6 @@ function EntryTab({
                   🌙 {formatNightShiftDate(form.date)}
                 </p>
               )}
-            </div>
-            <div>
-              <label className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1.5">
-                Подрядная организация
-              </label>
-              <select
-                value={form.contractorId}
-                onChange={(e) => set("contractorId", e.target.value)}
-                required
-                className="w-full border border-border rounded-sm px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary"
-              >
-                {contractors.map((ct) => (
-                  <option key={ct.id} value={ct.id}>
-                    {ct.name}
-                  </option>
-                ))}
-              </select>
-              {c && (
-                <p className="text-xs text-muted-foreground mt-1">
-                  Лимит: техника — {c.maxMachinery} ед., люди — {c.maxPeople} чел.
-                </p>
-              )}
-            </div>
           </div>
 
           {/* Shifts */}
@@ -406,6 +382,29 @@ function EntryTab({
                   </div>
                 ))}
               </div>
+            )}
+          </div>
+
+          <div>
+            <label className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1.5">
+              Подрядная организация
+            </label>
+            <select
+              value={form.contractorId}
+              onChange={(e) => set("contractorId", e.target.value)}
+              required
+              className="w-full border border-border rounded-sm px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary"
+            >
+              {contractors.map((ct) => (
+                <option key={ct.id} value={ct.id}>
+                  {ct.name}
+                </option>
+              ))}
+            </select>
+            {c && (
+              <p className="text-xs text-muted-foreground mt-1">
+                Лимит: техника — {c.maxMachinery} ед., люди — {c.maxPeople} чел.
+              </p>
             )}
           </div>
 
