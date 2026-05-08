@@ -126,7 +126,7 @@ export default function EntryTab({
               <div className="h-px flex-1 bg-border" />
               <span className="text-xs font-semibold uppercase tracking-widest text-muted-foreground px-2 flex items-center gap-1">
                 <Icon name="UserCheck" size={12} />
-                Состав смены
+                Заполнил
               </span>
               <div className="h-px flex-1 bg-border" />
             </div>
@@ -160,7 +160,9 @@ export default function EntryTab({
                 type="text"
                 value={personInput}
                 onChange={(e) => setPersonInput(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), addPerson())}
+                onKeyDown={(e) =>
+                  e.key === "Enter" && (e.preventDefault(), addPerson())
+                }
                 placeholder="Фамилия И.О."
                 className="flex-1 border border-border rounded-sm px-3 py-1.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary"
               />
@@ -180,7 +182,9 @@ export default function EntryTab({
                     key={`d${i}`}
                     className="flex items-center gap-1 bg-amber-50 border border-amber-200 rounded-sm pl-2 pr-1 py-0.5"
                   >
-                    <span className="text-xs text-amber-700 font-medium">☀</span>
+                    <span className="text-xs text-amber-700 font-medium">
+                      ☀
+                    </span>
                     <span className="text-sm">{name}</span>
                     <button
                       type="button"
@@ -196,7 +200,9 @@ export default function EntryTab({
                     key={`n${i}`}
                     className="flex items-center gap-1 bg-indigo-50 border border-indigo-200 rounded-sm pl-2 pr-1 py-0.5"
                   >
-                    <span className="text-xs text-indigo-400 font-medium">🌙</span>
+                    <span className="text-xs text-indigo-400 font-medium">
+                      🌙
+                    </span>
                     <span className="text-sm">{name}</span>
                     <button
                       type="button"
@@ -279,11 +285,15 @@ export default function EntryTab({
               <p
                 className={`text-xs mt-2 ${deviationClass(
                   Number(form.machineryPlan),
-                  Number(form.machineryFact)
+                  Number(form.machineryFact),
                 )}`}
               >
                 Отклонение:{" "}
-                {deviationStr(Number(form.machineryPlan), Number(form.machineryFact))} ед.
+                {deviationStr(
+                  Number(form.machineryPlan),
+                  Number(form.machineryFact),
+                )}{" "}
+                ед.
               </p>
             )}
           </div>
@@ -338,11 +348,12 @@ export default function EntryTab({
               <p
                 className={`text-xs mt-2 ${deviationClass(
                   Number(form.peoplePlan),
-                  Number(form.peopleFact)
+                  Number(form.peopleFact),
                 )}`}
               >
                 Отклонение:{" "}
-                {deviationStr(Number(form.peoplePlan), Number(form.peopleFact))} чел.
+                {deviationStr(Number(form.peoplePlan), Number(form.peopleFact))}{" "}
+                чел.
               </p>
             )}
           </div>
