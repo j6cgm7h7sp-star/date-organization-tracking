@@ -94,6 +94,19 @@ function formatDate(iso: string) {
   return `${d}.${m}.${y}`;
 }
 
+function nextDay(iso: string) {
+  const d = new Date(iso);
+  d.setDate(d.getDate() + 1);
+  return d.toISOString().slice(0, 10);
+}
+
+function formatNightShiftDate(iso: string) {
+  const [, m1, d1] = iso.split("-");
+  const next = nextDay(iso);
+  const [, m2, d2] = next.split("-");
+  return `${d1}.${m1} / ${d2}.${m2}`;
+}
+
 function today() {
   return new Date().toISOString().slice(0, 10);
 }
@@ -289,6 +302,11 @@ function EntryTab({
                 required
                 className="w-full border border-border rounded-sm px-3 py-2 text-sm font-mono-data bg-white focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary"
               />
+              {personShift === "night" && form.date && (
+                <p className="text-xs mt-1 font-semibold text-indigo-500 flex items-center gap-1">
+                  🌙 {formatNightShiftDate(form.date)}
+                </p>
+              )}
             </div>
             <div>
               <label className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1.5">
