@@ -314,6 +314,83 @@ function EntryTab({
             </div>
           </div>
 
+          {/* Shifts */}
+          <div>
+            <div className="flex items-center gap-2 mb-3">
+              <div className="h-px flex-1 bg-border" />
+              <span className="text-xs font-semibold uppercase tracking-widest text-muted-foreground px-2 flex items-center gap-1">
+                <Icon name="UserCheck" size={12} />
+                Состав смены
+              </span>
+              <div className="h-px flex-1 bg-border" />
+            </div>
+
+            <div className="flex gap-2 mb-3">
+              <div className="flex border border-border rounded-sm overflow-hidden shrink-0">
+                <button
+                  type="button"
+                  onClick={() => setPersonShift("day")}
+                  className={`px-3 py-1.5 text-xs font-semibold transition-colors flex items-center gap-1 ${
+                    personShift === "day"
+                      ? "bg-amber-500 text-white"
+                      : "bg-white text-muted-foreground hover:bg-amber-50"
+                  }`}
+                >
+                  ☀ День
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPersonShift("night")}
+                  className={`px-3 py-1.5 text-xs font-semibold transition-colors flex items-center gap-1 border-l border-border ${
+                    personShift === "night"
+                      ? "bg-indigo-500 text-white"
+                      : "bg-white text-muted-foreground hover:bg-indigo-50"
+                  }`}
+                >
+                  🌙 Ночь
+                </button>
+              </div>
+              <input
+                type="text"
+                value={personInput}
+                onChange={(e) => setPersonInput(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), addPerson())}
+                placeholder="Фамилия И.О."
+                className="flex-1 border border-border rounded-sm px-3 py-1.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary"
+              />
+              <button
+                type="button"
+                onClick={addPerson}
+                className="px-3 py-1.5 bg-primary text-primary-foreground rounded-sm text-xs font-semibold hover:bg-primary/90 transition-colors"
+              >
+                <Icon name="Plus" size={13} />
+              </button>
+            </div>
+
+            {(dayShift.length > 0 || nightShift.length > 0) && (
+              <div className="flex flex-wrap gap-1.5">
+                {dayShift.map((name, i) => (
+                  <div key={`d${i}`} className="flex items-center gap-1 bg-amber-50 border border-amber-200 rounded-sm pl-2 pr-1 py-0.5">
+                    <span className="text-xs text-amber-700 font-medium">☀</span>
+                    <span className="text-sm">{name}</span>
+                    <button type="button" onClick={() => removePerson("day", i)} className="text-amber-400 hover:text-red-500 transition-colors ml-0.5">
+                      <Icon name="X" size={11} />
+                    </button>
+                  </div>
+                ))}
+                {nightShift.map((name, i) => (
+                  <div key={`n${i}`} className="flex items-center gap-1 bg-indigo-50 border border-indigo-200 rounded-sm pl-2 pr-1 py-0.5">
+                    <span className="text-xs text-indigo-400 font-medium">🌙</span>
+                    <span className="text-sm">{name}</span>
+                    <button type="button" onClick={() => removePerson("night", i)} className="text-indigo-300 hover:text-red-500 transition-colors ml-0.5">
+                      <Icon name="X" size={11} />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
           {/* Machinery */}
           <div>
             <div className="flex items-center gap-2 mb-3">
@@ -429,86 +506,6 @@ function EntryTab({
                 Отклонение:{" "}
                 {deviationStr(Number(form.peoplePlan), Number(form.peopleFact))} чел.
               </p>
-            )}
-          </div>
-
-          {/* Shifts */}
-          <div>
-            <div className="flex items-center gap-2 mb-3">
-              <div className="h-px flex-1 bg-border" />
-              <span className="text-xs font-semibold uppercase tracking-widest text-muted-foreground px-2 flex items-center gap-1">
-                <Icon name="UserCheck" size={12} />
-                Состав смены
-              </span>
-              <div className="h-px flex-1 bg-border" />
-            </div>
-
-            {/* Single input row with shift toggle */}
-            <div className="flex gap-2 mb-3">
-              {/* Shift toggle */}
-              <div className="flex border border-border rounded-sm overflow-hidden shrink-0">
-                <button
-                  type="button"
-                  onClick={() => setPersonShift("day")}
-                  className={`px-3 py-1.5 text-xs font-semibold transition-colors flex items-center gap-1 ${
-                    personShift === "day"
-                      ? "bg-amber-500 text-white"
-                      : "bg-white text-muted-foreground hover:bg-amber-50"
-                  }`}
-                >
-                  ☀ День
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setPersonShift("night")}
-                  className={`px-3 py-1.5 text-xs font-semibold transition-colors flex items-center gap-1 border-l border-border ${
-                    personShift === "night"
-                      ? "bg-indigo-500 text-white"
-                      : "bg-white text-muted-foreground hover:bg-indigo-50"
-                  }`}
-                >
-                  🌙 Ночь
-                </button>
-              </div>
-              <input
-                type="text"
-                value={personInput}
-                onChange={(e) => setPersonInput(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), addPerson())}
-                placeholder="Фамилия И.О."
-                className="flex-1 border border-border rounded-sm px-3 py-1.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary"
-              />
-              <button
-                type="button"
-                onClick={addPerson}
-                className="px-3 py-1.5 bg-primary text-primary-foreground rounded-sm text-xs font-semibold hover:bg-primary/90 transition-colors"
-              >
-                <Icon name="Plus" size={13} />
-              </button>
-            </div>
-
-            {/* Combined list */}
-            {(dayShift.length > 0 || nightShift.length > 0) && (
-              <div className="flex flex-wrap gap-1.5">
-                {dayShift.map((name, i) => (
-                  <div key={`d${i}`} className="flex items-center gap-1 bg-amber-50 border border-amber-200 rounded-sm pl-2 pr-1 py-0.5">
-                    <span className="text-xs text-amber-700 font-medium">☀</span>
-                    <span className="text-sm">{name}</span>
-                    <button type="button" onClick={() => removePerson("day", i)} className="text-amber-400 hover:text-red-500 transition-colors ml-0.5">
-                      <Icon name="X" size={11} />
-                    </button>
-                  </div>
-                ))}
-                {nightShift.map((name, i) => (
-                  <div key={`n${i}`} className="flex items-center gap-1 bg-indigo-50 border border-indigo-200 rounded-sm pl-2 pr-1 py-0.5">
-                    <span className="text-xs text-indigo-400 font-medium">🌙</span>
-                    <span className="text-sm">{name}</span>
-                    <button type="button" onClick={() => removePerson("night", i)} className="text-indigo-300 hover:text-red-500 transition-colors ml-0.5">
-                      <Icon name="X" size={11} />
-                    </button>
-                  </div>
-                ))}
-              </div>
             )}
           </div>
 
