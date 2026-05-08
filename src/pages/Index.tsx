@@ -113,8 +113,8 @@ export default function Index() {
                 <h1 className="text-sm font-bold text-white tracking-wide uppercase leading-tight">
                   Суточный отчёт
                 </h1>
-                <p className="text-[11px] text-white/65 leading-tight font-medium tracking-wider uppercase">
-                  РЖД Строительство · Техника и люди
+                <p className="text-[11px] text-white/70 leading-tight font-medium tracking-wider uppercase">
+                  СТРОИТЕЛЬСТВО ВСМ · Техника и люди
                 </p>
               </div>
             </div>
@@ -200,7 +200,7 @@ export default function Index() {
           <div className="flex items-center gap-2">
             <Icon name="TrainFront" size={14} className="text-rzd-red" />
             <span className="text-xs text-muted-foreground uppercase tracking-wider font-semibold">
-              Суточный отчёт · РЖД Строительство
+              Суточный отчёт · СТРОИТЕЛЬСТВО ВСМ
             </span>
           </div>
           <span className="text-xs text-muted-foreground font-mono-data">v1.0</span>

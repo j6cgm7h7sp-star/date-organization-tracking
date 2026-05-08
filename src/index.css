@@ -4,46 +4,48 @@
 
 @layer base {
   :root {
-    /* RZD Construction palette */
-    --rzd-red: 3 78% 49%; /* #E2231A — корпоративный красный РЖД */
-    --rzd-red-dark: 3 78% 40%;
-    --rzd-graphite: 220 18% 16%; /* тёмно-серый — навигация/шапка */
-    --rzd-steel: 215 14% 34%;
+    /* VSM Construction palette — ярче и заметно отличается от РЖД */
+    --rzd-red: 8 92% 55%; /* алый-коралл, теплее и ярче корпоративного РЖД */
+    --rzd-red-dark: 8 92% 46%;
+    --vsm-blue: 212 95% 50%; /* синий ВСМ — скорость */
+    --vsm-blue-dark: 215 80% 32%;
+    --rzd-graphite: 218 30% 18%;
+    --rzd-steel: 215 18% 36%;
     --rzd-sand: 38 35% 95%;
 
-    --background: 210 22% 97%;
-    --foreground: 220 18% 14%;
+    --background: 210 30% 98%;
+    --foreground: 220 22% 13%;
 
     --card: 0 0% 100%;
-    --card-foreground: 220 18% 14%;
+    --card-foreground: 220 22% 13%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 220 18% 14%;
+    --popover-foreground: 220 22% 13%;
 
-    --primary: 220 18% 16%;
+    --primary: 215 80% 32%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 210 15% 92%;
-    --secondary-foreground: 220 18% 18%;
+    --secondary: 210 18% 93%;
+    --secondary-foreground: 220 22% 18%;
 
-    --muted: 210 15% 94%;
-    --muted-foreground: 215 14% 42%;
+    --muted: 210 18% 95%;
+    --muted-foreground: 215 16% 42%;
 
-    --accent: 3 78% 49%;
+    --accent: 8 92% 55%;
     --accent-foreground: 0 0% 100%;
 
-    --destructive: 3 78% 49%;
+    --destructive: 8 92% 55%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 214 18% 84%;
-    --input: 214 18% 84%;
-    --ring: 3 78% 49%;
+    --border: 214 22% 84%;
+    --input: 214 22% 84%;
+    --ring: 8 92% 55%;
 
     --radius: 4px;
 
-    --success: 145 55% 38%;
-    --warning: 38 90% 48%;
-    --danger: 3 78% 49%;
+    --success: 150 65% 40%;
+    --warning: 38 95% 52%;
+    --danger: 8 92% 55%;
   }
 }
 
@@ -106,9 +108,17 @@
       90deg,
       hsl(var(--rzd-red)) 0%,
       hsl(var(--rzd-red)) 38%,
-      hsl(220 18% 22%) 38%,
-      hsl(220 18% 22%) 100%
+      hsl(var(--vsm-blue)) 38%,
+      hsl(var(--vsm-blue-dark)) 100%
     );
+  }
+
+  .text-vsm-blue {
+    color: hsl(var(--vsm-blue));
+  }
+
+  .bg-vsm-blue {
+    background-color: hsl(var(--vsm-blue));
   }
 
   .rzd-accent-bar {
