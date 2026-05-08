@@ -730,7 +730,7 @@ function ReportsTab({
                     </span>
                   </td>
                   <td className="px-3 py-3 text-center">
-                    {totalPeoplePlan < totalPeopleFact ? (
+                    {totalPeopleFact < totalPeoplePlan ? (
                       <span className="text-xs font-semibold text-amber-600">⚠ Отклонение</span>
                     ) : (
                       <span className="text-xs text-green-700 font-semibold">✓ Норма</span>
