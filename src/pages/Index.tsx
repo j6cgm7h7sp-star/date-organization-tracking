@@ -263,13 +263,24 @@ function EntryTab({
               <label className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1.5">
                 Время
               </label>
-              <input
-                type="time"
-                value={form.time}
-                onChange={(e) => set("time", e.target.value)}
-                required
-                className="w-full border border-border rounded-sm px-3 py-2 text-sm font-mono-data bg-white focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary"
-              />
+              <div className="relative">
+                <input
+                  type="time"
+                  value={form.time}
+                  onChange={(e) => set("time", e.target.value)}
+                  required
+                  className="w-full border border-border rounded-sm px-3 py-2 text-sm font-mono-data bg-white focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary"
+                />
+              </div>
+              {form.time && (() => {
+                const h = parseInt(form.time.split(":")[0]);
+                const isDay = h >= 6 && h < 22;
+                return (
+                  <p className={`text-xs mt-1 font-semibold flex items-center gap-1 ${isDay ? "text-amber-600" : "text-indigo-500"}`}>
+                    {isDay ? "☀ День" : "🌙 Ночь"}
+                  </p>
+                );
+              })()}
             </div>
             <div>
               <label className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1.5">
