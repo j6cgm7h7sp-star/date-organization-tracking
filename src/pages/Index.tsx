@@ -199,17 +199,18 @@ function EntryTab({
   });
   const [dayShift, setDayShift] = useState<string[]>([]);
   const [nightShift, setNightShift] = useState<string[]>([]);
-  const [dayInput, setDayInput] = useState("");
-  const [nightInput, setNightInput] = useState("");
+  const [personInput, setPersonInput] = useState("");
+  const [personShift, setPersonShift] = useState<"day" | "night">("day");
   const [saved, setSaved] = useState(false);
 
   const set = (k: string, v: string) => setForm((f) => ({ ...f, [k]: v }));
 
-  function addPerson(shift: "day" | "night") {
-    const val = shift === "day" ? dayInput.trim() : nightInput.trim();
+  function addPerson() {
+    const val = personInput.trim();
     if (!val) return;
-    if (shift === "day") { setDayShift((p) => [...p, val]); setDayInput(""); }
-    else { setNightShift((p) => [...p, val]); setNightInput(""); }
+    if (personShift === "day") setDayShift((p) => [...p, val]);
+    else setNightShift((p) => [...p, val]);
+    setPersonInput("");
   }
 
   function removePerson(shift: "day" | "night", idx: number) {
@@ -460,84 +461,78 @@ function EntryTab({
               <div className="h-px flex-1 bg-border" />
               <span className="text-xs font-semibold uppercase tracking-widest text-muted-foreground px-2 flex items-center gap-1">
                 <Icon name="UserCheck" size={12} />
-                Состав смен
+                Состав смены
               </span>
               <div className="h-px flex-1 bg-border" />
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* Day shift */}
-              <div>
-                <p className="text-xs font-semibold text-amber-600 mb-2 flex items-center gap-1">
+
+            {/* Single input row with shift toggle */}
+            <div className="flex gap-2 mb-3">
+              {/* Shift toggle */}
+              <div className="flex border border-border rounded-sm overflow-hidden shrink-0">
+                <button
+                  type="button"
+                  onClick={() => setPersonShift("day")}
+                  className={`px-3 py-1.5 text-xs font-semibold transition-colors flex items-center gap-1 ${
+                    personShift === "day"
+                      ? "bg-amber-500 text-white"
+                      : "bg-white text-muted-foreground hover:bg-amber-50"
+                  }`}
+                >
                   ☀ День
-                </p>
-                <div className="flex gap-2 mb-2">
-                  <input
-                    type="text"
-                    value={dayInput}
-                    onChange={(e) => setDayInput(e.target.value)}
-                    onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), addPerson("day"))}
-                    placeholder="Фамилия И.О."
-                    className="flex-1 border border-border rounded-sm px-3 py-1.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => addPerson("day")}
-                    className="px-3 py-1.5 bg-amber-50 border border-amber-200 text-amber-700 rounded-sm text-xs font-semibold hover:bg-amber-100 transition-colors"
-                  >
-                    <Icon name="Plus" size={13} />
-                  </button>
-                </div>
-                <div className="space-y-1 min-h-[32px]">
-                  {dayShift.map((name, i) => (
-                    <div key={i} className="flex items-center justify-between bg-amber-50/60 border border-amber-100 rounded-sm px-3 py-1.5">
-                      <span className="text-sm">{name}</span>
-                      <button type="button" onClick={() => removePerson("day", i)} className="text-muted-foreground hover:text-red-500 transition-colors ml-2">
-                        <Icon name="X" size={12} />
-                      </button>
-                    </div>
-                  ))}
-                  {dayShift.length === 0 && (
-                    <p className="text-xs text-muted-foreground italic">Нет сотрудников</p>
-                  )}
-                </div>
-              </div>
-              {/* Night shift */}
-              <div>
-                <p className="text-xs font-semibold text-indigo-500 mb-2 flex items-center gap-1">
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPersonShift("night")}
+                  className={`px-3 py-1.5 text-xs font-semibold transition-colors flex items-center gap-1 border-l border-border ${
+                    personShift === "night"
+                      ? "bg-indigo-500 text-white"
+                      : "bg-white text-muted-foreground hover:bg-indigo-50"
+                  }`}
+                >
                   🌙 Ночь
-                </p>
-                <div className="flex gap-2 mb-2">
-                  <input
-                    type="text"
-                    value={nightInput}
-                    onChange={(e) => setNightInput(e.target.value)}
-                    onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), addPerson("night"))}
-                    placeholder="Фамилия И.О."
-                    className="flex-1 border border-border rounded-sm px-3 py-1.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => addPerson("night")}
-                    className="px-3 py-1.5 bg-indigo-50 border border-indigo-200 text-indigo-600 rounded-sm text-xs font-semibold hover:bg-indigo-100 transition-colors"
-                  >
-                    <Icon name="Plus" size={13} />
-                  </button>
-                </div>
-                <div className="space-y-1 min-h-[32px]">
-                  {nightShift.map((name, i) => (
-                    <div key={i} className="flex items-center justify-between bg-indigo-50/60 border border-indigo-100 rounded-sm px-3 py-1.5">
-                      <span className="text-sm">{name}</span>
-                      <button type="button" onClick={() => removePerson("night", i)} className="text-muted-foreground hover:text-red-500 transition-colors ml-2">
-                        <Icon name="X" size={12} />
-                      </button>
-                    </div>
-                  ))}
-                  {nightShift.length === 0 && (
-                    <p className="text-xs text-muted-foreground italic">Нет сотрудников</p>
-                  )}
-                </div>
+                </button>
               </div>
+              <input
+                type="text"
+                value={personInput}
+                onChange={(e) => setPersonInput(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), addPerson())}
+                placeholder="Фамилия И.О."
+                className="flex-1 border border-border rounded-sm px-3 py-1.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary"
+              />
+              <button
+                type="button"
+                onClick={addPerson}
+                className="px-3 py-1.5 bg-primary text-primary-foreground rounded-sm text-xs font-semibold hover:bg-primary/90 transition-colors"
+              >
+                <Icon name="Plus" size={13} />
+              </button>
             </div>
+
+            {/* Combined list */}
+            {(dayShift.length > 0 || nightShift.length > 0) && (
+              <div className="flex flex-wrap gap-1.5">
+                {dayShift.map((name, i) => (
+                  <div key={`d${i}`} className="flex items-center gap-1 bg-amber-50 border border-amber-200 rounded-sm pl-2 pr-1 py-0.5">
+                    <span className="text-xs text-amber-700 font-medium">☀</span>
+                    <span className="text-sm">{name}</span>
+                    <button type="button" onClick={() => removePerson("day", i)} className="text-amber-400 hover:text-red-500 transition-colors ml-0.5">
+                      <Icon name="X" size={11} />
+                    </button>
+                  </div>
+                ))}
+                {nightShift.map((name, i) => (
+                  <div key={`n${i}`} className="flex items-center gap-1 bg-indigo-50 border border-indigo-200 rounded-sm pl-2 pr-1 py-0.5">
+                    <span className="text-xs text-indigo-400 font-medium">🌙</span>
+                    <span className="text-sm">{name}</span>
+                    <button type="button" onClick={() => removePerson("night", i)} className="text-indigo-300 hover:text-red-500 transition-colors ml-0.5">
+                      <Icon name="X" size={11} />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
           {limitAlert && (
