@@ -12,6 +12,7 @@ import {
   today,
 } from "./types";
 import { StatusBadge } from "./shared";
+import { registerCyrillicFont } from "./pdfFont";
 
 export default function ReportsTab({
   contractors,
@@ -87,7 +88,7 @@ export default function ReportsTab({
     return { headers, rows, totals };
   }
 
-  function downloadReport(format: "excel" | "pdf") {
+  async function downloadReport(format: "excel" | "pdf") {
     const { headers, rows, totals } = buildTableData();
     const safeName = selectedContractorName.replace(/[^а-яА-Яa-zA-Z0-9]/g, "_");
     const baseTitle = `Отчёт за ${formatDate(selectedDate)} · ${selectedContractorName}`;
@@ -123,16 +124,23 @@ export default function ReportsTab({
     }
 
     const doc = new jsPDF({ orientation: "landscape", unit: "pt", format: "a4" });
-    doc.setFont("helvetica", "bold");
+    const fontName = await registerCyrillicFont(doc);
+    doc.setFont(fontName, "bold");
     doc.setFontSize(13);
     doc.text(baseTitle, 40, 40);
     autoTable(doc, {
       head: [headers],
       body: [...rows.map((r) => r.map((c) => String(c))), totals.map((c) => String(c))],
       startY: 60,
-      styles: { font: "helvetica", fontSize: 8, cellPadding: 4, overflow: "linebreak" },
-      headStyles: { fillColor: [33, 52, 84], textColor: 255, fontStyle: "bold", halign: "center" },
-      bodyStyles: { halign: "center" },
+      styles: { font: fontName, fontSize: 8, cellPadding: 4, overflow: "linebreak" },
+      headStyles: {
+        font: fontName,
+        fontStyle: "bold",
+        fillColor: [33, 52, 84],
+        textColor: 255,
+        halign: "center",
+      },
+      bodyStyles: { font: fontName, halign: "center" },
       columnStyles: {
         0: { halign: "center" },
         1: { halign: "left", cellWidth: 90 },
@@ -144,15 +152,18 @@ export default function ReportsTab({
         if (data.section === "body" && data.row.index === lastRow) {
           data.cell.styles.fillColor = [230, 232, 238];
           data.cell.styles.fontStyle = "bold";
+          data.cell.styles.font = fontName;
         }
         const text = String(data.cell.raw ?? "");
         if (data.section === "body" && text === "Отклонение") {
           data.cell.styles.textColor = [200, 90, 0];
           data.cell.styles.fontStyle = "bold";
+          data.cell.styles.font = fontName;
         }
         if (data.section === "body" && text === "Норма") {
           data.cell.styles.textColor = [40, 130, 70];
           data.cell.styles.fontStyle = "bold";
+          data.cell.styles.font = fontName;
         }
       },
     });
