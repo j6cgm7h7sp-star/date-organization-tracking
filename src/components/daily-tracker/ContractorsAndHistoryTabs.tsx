@@ -2,6 +2,8 @@ import { useState } from "react";
 import Icon from "@/components/ui/icon";
 import { Contractor, DailyRecord, formatDate, isAlert } from "./types";
 
+const CONTRACTORS_PASSWORD = "9456";
+
 export function ContractorsTab({
   contractors,
   onAdd,
@@ -13,6 +15,31 @@ export function ContractorsTab({
 }) {
   const [form, setForm] = useState({ name: "" });
   const [adding, setAdding] = useState(false);
+  const [unlocked, setUnlocked] = useState<boolean>(() => {
+    try {
+      return sessionStorage.getItem("dt_contractors_unlocked") === "1";
+    } catch {
+      return false;
+    }
+  });
+  const [pwdInput, setPwdInput] = useState("");
+  const [pwdError, setPwdError] = useState(false);
+
+  function handleUnlock(e: React.FormEvent) {
+    e.preventDefault();
+    if (pwdInput === CONTRACTORS_PASSWORD) {
+      setUnlocked(true);
+      setPwdError(false);
+      setPwdInput("");
+      try {
+        sessionStorage.setItem("dt_contractors_unlocked", "1");
+      } catch {
+        // ignore
+      }
+    } else {
+      setPwdError(true);
+    }
+  }
 
   function handleAdd(e: React.FormEvent) {
     e.preventDefault();
@@ -22,6 +49,64 @@ export function ContractorsTab({
     });
     setForm({ name: "" });
     setAdding(false);
+  }
+
+  if (!unlocked) {
+    return (
+      <div className="animate-slide-up flex items-center justify-center py-16">
+        <div className="bg-white border border-border rounded-sm shadow-sm w-full max-w-md overflow-hidden">
+          <div className="px-6 py-4 border-b border-border bg-primary">
+            <div className="flex items-center gap-2">
+              <Icon name="Lock" size={16} className="text-primary-foreground" />
+              <h3 className="text-sm font-semibold text-primary-foreground uppercase tracking-wide">
+                Доступ ограничен
+              </h3>
+            </div>
+            <p className="text-xs text-primary-foreground/70 mt-1">
+              Введите пароль для управления подрядчиками
+            </p>
+          </div>
+          <form onSubmit={handleUnlock} className="p-6 space-y-4">
+            <div>
+              <label className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1.5">
+                Пароль
+              </label>
+              <input
+                type="password"
+                value={pwdInput}
+                onChange={(e) => {
+                  setPwdInput(e.target.value);
+                  setPwdError(false);
+                }}
+                autoFocus
+                placeholder="••••"
+                className={`w-full border rounded-sm px-3 py-2 text-sm font-mono-data bg-white focus:outline-none focus:ring-2 focus:ring-primary/40 ${
+                  pwdError
+                    ? "border-red-400 focus:border-red-400"
+                    : "border-border focus:border-primary"
+                }`}
+              />
+              {pwdError && (
+                <p className="text-xs text-red-600 mt-1.5 flex items-center gap-1 font-medium animate-fade-in">
+                  <Icon name="AlertOctagon" size={12} />
+                  Неверный пароль
+                </p>
+              )}
+            </div>
+            <button
+              type="submit"
+              className="w-full bg-primary text-primary-foreground px-4 py-2.5 text-sm font-semibold rounded-sm hover:bg-primary/90 transition-colors flex items-center justify-center gap-2"
+            >
+              <Icon name="Unlock" size={14} />
+              Разблокировать
+            </button>
+            <p className="text-xs text-muted-foreground text-center">
+              Доступ сохраняется до закрытия вкладки
+            </p>
+          </form>
+        </div>
+      </div>
+    );
   }
 
   return (
